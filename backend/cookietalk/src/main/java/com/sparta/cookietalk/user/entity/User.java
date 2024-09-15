@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.util.Optional;
 import lombok.Getter;
 
 @Getter
@@ -22,9 +23,21 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false, unique = true)
+    private String nickname;
+
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    public User(String username, String password, String email,String nickname,
+        UserRole role) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.nickname = nickname;
+        this.role = role;
+    }
 }
