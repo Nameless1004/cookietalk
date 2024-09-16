@@ -8,11 +8,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.util.Optional;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,6 +33,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    private Long kakaoId;
+
     public User(String username, String password, String email,String nickname,
         UserRole role) {
         this.username = username;
@@ -40,4 +43,20 @@ public class User {
         this.nickname = nickname;
         this.role = role;
     }
+
+    public User(String username, String password, String email,String nickname,
+        UserRole role, Long kakaoId) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.nickname = nickname;
+        this.role = role;
+        this.kakaoId = kakaoId;
+    }
+
+    public User updateKakaoId(Long kakaoId) {
+        this.kakaoId = kakaoId;
+        return this;
+    }
+
 }
