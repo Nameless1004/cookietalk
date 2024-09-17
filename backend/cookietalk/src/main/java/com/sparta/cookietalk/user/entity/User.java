@@ -1,6 +1,7 @@
 package com.sparta.cookietalk.user.entity;
 
 import com.sparta.cookietalk.common.enums.UserRole;
+import com.sparta.cookietalk.cookie.entity.Cookie;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,6 +9,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,6 +39,9 @@ public class User {
     private UserRole role;
 
     private Long kakaoId;
+
+    @OneToMany(mappedBy = "creator")
+    private List<Cookie> cookies = new ArrayList<>();
 
     public User(String username, String password, String email,String nickname,
         UserRole role) {
