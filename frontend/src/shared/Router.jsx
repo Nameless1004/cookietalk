@@ -9,7 +9,7 @@ import Channel from '../pages/Channel.jsx';
 import Cookie from '../pages/Cookie.jsx';
 import PostCookie from '../pages/PostCookie.jsx';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
-import Layout from '../components/Layout.jsx';
+import Layout from '../components/Layout/Layout.jsx';
 
 const Router = () => {
   const publicRoutes = [
