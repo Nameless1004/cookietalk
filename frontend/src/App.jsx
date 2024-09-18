@@ -1,9 +1,7 @@
-const App = () => {
-    return (
-        <div>
+import Router from './shared/Router.jsx';
 
-        </div>
-    );
+const App = () => {
+  return <Router />;
 };
 
 export default App;
