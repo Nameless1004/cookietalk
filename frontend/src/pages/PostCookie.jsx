@@ -2,6 +2,7 @@ import FormInput from '../components/inputs/FormInput.jsx';
 import { useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
 import CookieCategorySelect from '../components/inputs/CookieCategorySelect.jsx';
+import SeriesModal from '../components/modals/SeriesModal.jsx';
 
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
@@ -12,6 +13,8 @@ const PostCookie = () => {
     category: null,
     lectureResources: null,
   });
+
+  const [showSeriesModal, setShowSeriesModal] = useState(true);
 
   const handleVideoChange = (file) => {
     setPostValues({ ...postValues, video: file });
@@ -53,7 +56,17 @@ const PostCookie = () => {
           formValue={postValues}
           setFormValue={setPostValues}
         />
-        {/*TODO: 시리즈 인풋 추가*/}
+        <div className='flex gap-5'>
+          <span className='font-bold'>시리즈</span>
+          <button
+            type='button'
+            onClick={() => {
+              setShowSeriesModal(true);
+            }}
+          >
+            시리즈에 추가하기
+          </button>
+        </div>
         <FormInput
           label='상세 설명'
           type='textarea'
@@ -69,6 +82,7 @@ const PostCookie = () => {
           등록하기
         </button>
       </form>
+      {showSeriesModal ? <SeriesModal setShowSeriesModal={setShowSeriesModal} /> : null}
     </div>
   );
 };

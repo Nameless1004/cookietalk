@@ -6,7 +6,7 @@ const SelectButton = ({ name, value, children, className, onClick, ...props }) =
       name={name}
       type='button'
       onClick={onClick}
-      className={`w-[80px] h-[80px] ${isSelected ? 'bg-gray-400' : 'bg-gray-300'} ${className}`}
+      className={`w-[80px] h-[80px] ${isSelected ? 'bg-red' : 'bg-gray-300'} ${className}`}
       {...props}
     >
       {children.includes('/') ? (
