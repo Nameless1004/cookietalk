@@ -7,7 +7,7 @@ import com.sparta.cookietalk.common.enums.UploadType;
 import com.sparta.cookietalk.common.exceptions.ConvertFailedException;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.utils.FileUtils;
-ㅁㅇimport com.sparta.cookietalk.upload.dto.UploadFileResponse;
+import com.sparta.cookietalk.upload.dto.UploadFileResponse;
 import com.sparta.cookietalk.upload.dto.UploadFileResponse.Detail;
 import com.sparta.cookietalk.user.entity.User;
 import java.io.File;
