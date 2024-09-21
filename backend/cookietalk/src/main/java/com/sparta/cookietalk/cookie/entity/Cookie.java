@@ -1,10 +1,11 @@
 package com.sparta.cookietalk.cookie.entity;
 
-import com.sparta.cookietalk.comment.Comment;
+import com.sparta.cookietalk.channel.entity.Channel;
+import com.sparta.cookietalk.category.entity.CookieCategory;
 import com.sparta.cookietalk.common.entity.Timestamped;
 import com.sparta.cookietalk.common.enums.ProccessStatus;
+import com.sparta.cookietalk.series.entity.SeriesCookie;
 import com.sparta.cookietalk.upload.UploadFile;
-import com.sparta.cookietalk.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,9 +18,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.awt.Image;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,36 +44,33 @@ public class Cookie extends Timestamped {
     private ProccessStatus proccessStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User creator;
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "video_id", nullable = false)
+    private UploadFile videoFile;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumbnail_id", nullable = false)
+    private UploadFile thumbnailFile;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attachment_id", nullable = true)
+    private UploadFile attachmentFile; // zip 파일
 
     @OneToMany(mappedBy = "cookie")
-    private List<Comment> comments = new ArrayList<>();
+    private Set<CookieCategory> cookieCategories = new HashSet<>();
 
-    @OneToOne(mappedBy = "cookie", fetch = FetchType.LAZY)
-    private UploadFile video;
-
-    @OneToOne(mappedBy = "cookie", fetch = FetchType.LAZY)
-    private UploadFile thumbnail;
-
-    @OneToOne(mappedBy = "cookie", fetch = FetchType.LAZY)
-    private UploadFile referenceFile; // zip 파일
-
-    /**
-     * 댓글 추가
-     * @param comment
-     */
-    public void addComment(Comment comment) {
-        comments.add(comment);
-        comment.setCookie(this);
-    }
+    @OneToMany(mappedBy = "cookie")
+    private List<SeriesCookie> seriesCookies = new ArrayList<>();
 
     /**
      * 비디오 등록
      * @param video
      */
     public void addVideo(UploadFile video) {
-        this.video = video;
+        this.videoFile = video;
     }
 
     /**
@@ -79,23 +78,25 @@ public class Cookie extends Timestamped {
      * @param thumbnail
      */
     public void addThumbnail(UploadFile thumbnail) {
-        this.thumbnail = thumbnail;
+        this.thumbnailFile = thumbnail;
     }
 
     /**
      * 레퍼런스 자료 등록
-     * @param referenceFile
+     * @param attachment
      */
-    public void addReferenceFile(UploadFile referenceFile) {
-        this.referenceFile = referenceFile;
+    public void addAttachment(UploadFile attachment) {
+        this.attachmentFile = attachment;
     }
 
     @Builder
-    public Cookie(User creator, String title, String description, ProccessStatus status, UploadFile video) {
-        this.creator = creator;
+    public Cookie(Channel channel, String title, String description, ProccessStatus status, UploadFile videoFile, UploadFile thumbnailFile, UploadFile attachmentFile) {
+        this.channel = channel;
         this.title = title;
         this.description = description;
         this.proccessStatus = status;
-        this.video = video;
+        this.videoFile = videoFile;
+        this.thumbnailFile = thumbnailFile;
+        this.attachmentFile = attachmentFile;
     }
 }

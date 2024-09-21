@@ -1,28 +1,25 @@
 package com.sparta.cookietalk.cookie.service;
 
-import com.sparta.cookietalk.amazon.AmazonS3Uploader;
-import com.sparta.cookietalk.amazon.HlsConverter;
+import com.sparta.cookietalk.channel.entity.Channel;
+import com.sparta.cookietalk.common.enums.ProccessStatus;
 import com.sparta.cookietalk.common.enums.UploadStatus;
-import com.sparta.cookietalk.common.enums.UploadType;
-import com.sparta.cookietalk.common.exceptions.ConvertFailedException;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
-import com.sparta.cookietalk.common.utils.FileUtils;
-import com.sparta.cookietalk.cookie.dto.CookieCreateRequestDto;
+import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
+import com.sparta.cookietalk.cookie.dto.CookieRequest;
+import com.sparta.cookietalk.cookie.dto.CookieResponse;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
 import com.sparta.cookietalk.user.entity.User;
-import java.io.File;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -31,25 +28,28 @@ import org.springframework.web.multipart.MultipartFile;
 public class CookieService {
 
     private final CookieRepository cookieRepository;
-    private final HlsConverter hlsConverter;
-    private final AmazonS3Uploader s3Uploader;
-    private final FileUtils fileUtils;
 
     private final UploadFileRepository uploadFileRepository;
 
-    public void createCookie(User creator, CookieCreateRequestDto requestDto) {
+    public CookieResponse.Create createCookie(User auth, CookieRequest.Create requestDto) {
+        UploadFile video = uploadFileRepository.findByIdOrElseThorw(requestDto.videoFileId());
+        UploadFile thumbnail = uploadFileRepository.findByIdOrElseThorw(requestDto.thumbnailFileId());
+        UploadFile attachment = requestDto.attachmentFileId() == null ? null : uploadFileRepository.findByIdOrElseThorw(requestDto.attachmentFileId());
 
-        UploadFile video = uploadFileRepository.findByIdOrElseThorw(requestDto.getVideoFileId());
-        UploadFile thumbnail = uploadFileRepository.findByIdOrElseThorw(requestDto.getVideoFileId());
-        UploadFile referenceFile = requestDto.getReferenceFileId() == null ? null : uploadFileRepository.findByIdOrElseThorw(requestDto.getReferenceFileId());
-
-        fileUploadCompleteCheck(video, thumbnail, referenceFile);
-
+        fileUploadCompleteCheck(video, thumbnail, attachment);
+        Channel channel = auth.getChannel();
         Cookie newCookie = Cookie.builder()
-            // .creator(creator)
-            // .title(requestDto.getTitle())
-            // .description(requestDto.getDescription())
+            .channel(channel)
+            .videoFile(video)
+            .thumbnailFile(thumbnail)
+            .attachmentFile(attachment)
+            .status(ProccessStatus.SUCCESS)
+            .title(requestDto.title())
+            .description(requestDto.description())
             .build();
+        newCookie = cookieRepository.save(newCookie);
+
+        return new CookieResponse.Create(newCookie.getId());
     }
 
     private void fileUploadCompleteCheck(UploadFile... video) {
@@ -61,26 +61,17 @@ public class CookieService {
         }
     }
 
-    public void deleteCookie(User user, Cookie cookie) {
-        // 해당 유저만 삭제 가능
+    public CookieResponse.Detail getCookie(Long cookieId) {
+        if(!cookieRepository.existsById(cookieId)) {
+            throw new InvalidRequestException("존재하지 않는 쿠키입니다.");
+        }
 
+        return cookieRepository.getCookieDetails(cookieId);
     }
 
-    /**
-     * 해당 쿠키 정보
-     *
-     * @param cookieId
-     */
-    public void GetCookieInfo(Long cookieId) {
-
-    }
-
-    /**
-     * 해당 유저의 모든 쿠키 정보
-     *
-     * @param user
-     */
-    public void GetCookieInfos(User user, Pageable pageable) {
-
+    public Page<List> getAllCookies(Long channelId, int page, int size) {
+        Pageable pageRequest = PageRequest.of(page, size);
+        Page<List> c = cookieRepository.getCookieListByChannelId(channelId, pageRequest);
+        return null;
     }
 }
