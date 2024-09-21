@@ -1,5 +1,6 @@
 package com.sparta.cookietalk.reissue.service;
 
+import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.common.enums.UserRole;
 import com.sparta.cookietalk.reissue.entity.RefreshEntity;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,7 @@ public class ReissueService {
     private final JwtUtil jwtUtil;
     private final RefreshRepository refreshRepository;
 
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseDto<Void> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = null;
         Cookie oldCookie = null;
         for (Cookie cookie : request.getCookies()) {
@@ -34,8 +36,7 @@ public class ReissueService {
         }
 
         if (refreshToken == null) {
-            return ResponseEntity.badRequest()
-                .body("refresh token null");
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token null");
         }
 
         // decode 해준 후 prefix 제거
@@ -45,22 +46,19 @@ public class ReissueService {
         try {
             jwtUtil.isExpired(refreshToken);
         } catch (ExpiredJwtException e) {
-            return ResponseEntity.badRequest()
-                .body("refresh token expired");
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token expired");
         }
 
         // 토큰이 refresh인지 체크
         String categry = jwtUtil.getCategory(refreshToken);
         if (!categry.equals(TokenType.REFRESH.name())) {
-            return ResponseEntity.badRequest()
-                .body("refresh token invalid");
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token invalid");
         }
 
         // DB에 저장되어 있는지 확인
         boolean isExist = refreshRepository.existsByRefresh(refreshToken);
         if (!isExist) {
-            return ResponseEntity.badRequest()
-                .body("refresh token invalid");
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token invalid");
         }
 
         String userEmail = jwtUtil.getUsername(refreshToken);
@@ -81,8 +79,7 @@ public class ReissueService {
         oldCookie.setMaxAge(0);
         jwtUtil.addTokenToHeader(response, newAccessToken);
         jwtUtil.addCookie(response, TokenType.REFRESH, newRefreshToken);
-        return ResponseEntity.ok()
-            .build();
+        return  ResponseDto.of(HttpStatus.OK);
     }
     /**
      * 리프레쉬 토큰 테이블에 추가

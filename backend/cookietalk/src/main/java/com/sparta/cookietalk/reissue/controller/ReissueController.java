@@ -1,5 +1,6 @@
 package com.sparta.cookietalk.reissue.controller;
 
+import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.reissue.service.ReissueService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,8 +16,10 @@ public class ReissueController {
     private final ReissueService reissueService;
 
     @PostMapping("/api/user/reissue")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
-        return reissueService.reissue(request, response);
+    public ResponseEntity<ResponseDto<Void>> reissue(HttpServletRequest request, HttpServletResponse response) {
+        ResponseDto<Void> reissue = reissueService.reissue(request, response);
+
+        return ResponseEntity.status(reissue.getStatusCode()).body(reissue);
     }
 
 }
