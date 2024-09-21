@@ -6,10 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum UploadType {
-    VIDEO("videos",  "C:/temp/videos"),
-    IMAGE("images",  "C:/temp/images"),
-    REFERENCE("references",  "C:/temp/references");
-
+    VIDEO("videos"),
+    IMAGE("images"),
+    REFERENCE("attachments");
     private final String key;
-    private final String localSavePath;
 }

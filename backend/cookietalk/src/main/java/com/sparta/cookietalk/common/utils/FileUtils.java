@@ -6,15 +6,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class FileUtils {
+
+    @Value("${local.save.path}")
+    private String localSavePath;
 
     public File saveTemp(UploadType uploadType, MultipartFile file) {
         try {
@@ -22,7 +22,7 @@ public class FileUtils {
             String fileName = getFilename(file.getOriginalFilename());
             String uuid = UUID.randomUUID()
                 .toString();
-            Path path = Paths.get(uploadType.getLocalSavePath(), uuid + "." + ext);
+            Path path = Paths.get(localSavePath,uploadType.getKey(), uuid + "." + ext);
             File tempFile = path.toFile();
             if (!tempFile.exists()) {
                 tempFile.mkdirs();

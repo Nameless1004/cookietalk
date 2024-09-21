@@ -7,6 +7,8 @@ import com.sparta.cookietalk.common.enums.UploadType;
 import com.sparta.cookietalk.common.exceptions.ConvertFailedException;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.utils.FileUtils;
+ㅁㅇimport com.sparta.cookietalk.upload.dto.UploadFileResponse;
+import com.sparta.cookietalk.upload.dto.UploadFileResponse.Detail;
 import com.sparta.cookietalk.user.entity.User;
 import java.io.File;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +28,7 @@ public class UploadService {
     private final AmazonS3Uploader s3Uploader;
     private final UploadFileRepository uploadFileRepository;
 
-    public Long uploadVideo(User user, MultipartFile file) {
+    public UploadFileResponse.Detail uploadVideo(User user, MultipartFile file) {
         File vod = fileUtils.saveTemp(UploadType.VIDEO, file);
 
         // s3_url은 나중에 업로드되면 지정
@@ -65,7 +67,7 @@ public class UploadService {
             });
 
         log.info("{}", saveFile.getId());
-        return saveFile.getId();
+        return new Detail(saveFile.getId(), "");
     }
 
     public void deleteFile(User user, Long fileId) {
