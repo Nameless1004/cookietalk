@@ -5,6 +5,7 @@ import CookieCategorySelect from '../components/inputs/CookieCategorySelect.jsx'
 import SeriesModal from '../components/modals/SeriesModal.jsx';
 import Button from '../components/inputs/Button.jsx';
 import { X } from 'lucide-react';
+import { cookiePostValidate } from '../utilities/validate.js';
 
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
@@ -30,6 +31,13 @@ const PostCookie = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const { isValid, message } = cookiePostValidate(postValues);
+
+    if (!isValid) {
+      alert(message);
+      return;
+    }
+
     console.log(postValues);
   };
 
