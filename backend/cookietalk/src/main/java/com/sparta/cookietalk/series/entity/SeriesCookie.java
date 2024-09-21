@@ -8,8 +8,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SeriesCookie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +25,11 @@ public class SeriesCookie {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cookie_id")
     private Cookie cookie;
+
+    public SeriesCookie(Series series, Cookie cookie) {
+        this.series = series;
+        this.cookie = cookie;
+        series.getSeriesCookies().add(this);
+        cookie.getSeriesCookies().add(this);
+    }
 }

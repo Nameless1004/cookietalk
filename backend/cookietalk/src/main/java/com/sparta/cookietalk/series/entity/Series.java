@@ -2,6 +2,7 @@ package com.sparta.cookietalk.series.entity;
 
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.common.entity.Timestamped;
+import com.sparta.cookietalk.cookie.entity.Cookie;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

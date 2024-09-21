@@ -8,6 +8,7 @@ public sealed interface CookieRequest permits Create {
         String title,
         String description,
         Long cartegoryId,
+        Long seriesId,
         Long videoFileId,
         Long thumbnailFileId,
         Long attachmentFileId

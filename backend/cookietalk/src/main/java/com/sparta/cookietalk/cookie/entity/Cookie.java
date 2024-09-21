@@ -4,6 +4,7 @@ import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.category.entity.CookieCategory;
 import com.sparta.cookietalk.common.entity.Timestamped;
 import com.sparta.cookietalk.common.enums.ProccessStatus;
+import com.sparta.cookietalk.series.entity.Series;
 import com.sparta.cookietalk.series.entity.SeriesCookie;
 import com.sparta.cookietalk.upload.UploadFile;
 import jakarta.persistence.Column;

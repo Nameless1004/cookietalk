@@ -25,5 +25,7 @@ public class CookieCategory {
     public CookieCategory(Cookie cookie, Category category) {
         this.cookie = cookie;
         this.category = category;
+        cookie.getCookieCategories().add(this);
+        category.getCookieCategories().add(this);
     }
 }

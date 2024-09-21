@@ -26,12 +26,13 @@ public class CookieController {
         return "upload";
     }
 
-    @PostMapping("/api/cookies")
+    @PostMapping("/api/channels/{channelId}/cookies")
     @ResponseBody
     public ResponseEntity<ResponseDto<CookieResponse.Create>> createCookie(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable("channelId") Long channelId,
         CookieRequest.Create create) {
-        CookieResponse.Create cookie = cookieService.createCookie(userDetails.getUser(), create);
+        CookieResponse.Create cookie = cookieService.createCookie(userDetails.getUser(), channelId, create);
         return  ResponseDto.toEntity(HttpStatus.CREATED, cookie);
     }
 
@@ -39,18 +40,5 @@ public class CookieController {
     public ResponseEntity<ResponseDto<CookieResponse.Detail>> getCookieById(@PathVariable("cookieId") Long cookieId){
         CookieResponse.Detail details = cookieService.getCookie(cookieId);
         return ResponseDto.toEntity(HttpStatus.OK, details);
-    }
-
-    /**
-     * 특정 채널의 쿠키 목록 가져오기
-     * @return
-     */
-    @GetMapping("/api/channels/{channelId}/cookies")
-    public ResponseEntity<ResponseDto<CookieResponse.List>> getAllCookies(
-        @PathVariable("channelId") Long channelId
-    ){
-        // todo: todo
-        // Page<List> pages = cookieService.getAllCookies(channelId);
-        return ResponseDto.toEntity(HttpStatus.OK, "", null);
     }
 }
