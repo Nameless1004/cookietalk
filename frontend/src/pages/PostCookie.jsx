@@ -3,6 +3,8 @@ import { useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
 import CookieCategorySelect from '../components/inputs/CookieCategorySelect.jsx';
 import SeriesModal from '../components/modals/SeriesModal.jsx';
+import Button from '../components/inputs/Button.jsx';
+import { X } from 'lucide-react';
 
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
@@ -58,14 +60,37 @@ const PostCookie = () => {
         />
         <div className='flex gap-5'>
           <span className='font-bold'>시리즈</span>
-          <button
-            type='button'
-            onClick={() => {
-              setShowSeriesModal(true);
-            }}
-          >
-            시리즈에 추가하기
-          </button>
+          {postValues.series ? (
+            <div className='flex items-center gap-3'>
+              <span>{postValues.series}</span>
+              <X
+                onClick={() => {
+                  setPostValues({ ...postValues, series: null });
+                }}
+                size='16px'
+              />
+              <Button
+                styleType='sub'
+                onClick={() => {
+                  setShowSeriesModal(true);
+                }}
+                className='rounded py-1 px-2'
+              >
+                변경하기
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <button
+                type='button'
+                onClick={() => {
+                  setShowSeriesModal(true);
+                }}
+              >
+                시리즈에 추가하기
+              </button>
+            </div>
+          )}
         </div>
         <FormInput
           label='상세 설명'
@@ -82,7 +107,13 @@ const PostCookie = () => {
           등록하기
         </button>
       </form>
-      {showSeriesModal ? <SeriesModal setShowSeriesModal={setShowSeriesModal} /> : null}
+      {showSeriesModal ? (
+        <SeriesModal
+          setShowSeriesModal={setShowSeriesModal}
+          formValue={postValues}
+          setFormValue={setPostValues}
+        />
+      ) : null}
     </div>
   );
 };

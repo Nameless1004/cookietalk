@@ -9,7 +9,7 @@ export default {
         '--dark-gray-0': '#777777',
         '--dark-gray-1': '#2c2c2c',
         '--primary-orange': '#ff7f00',
-        '--secondary-orange': '#FFFAF5',
+        '--secondary-orange': '#ffead6',
       },
     },
   },
