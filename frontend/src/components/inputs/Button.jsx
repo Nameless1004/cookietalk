@@ -16,7 +16,7 @@ const Button = ({ children, className, onClick, type = 'button', styleType, ...p
     <button
       type={type}
       onClick={onClick}
-      className={`${className} ${style}`}
+      className={`${className} ${style} hover:opacity-75`}
       {...props}
     >
       {children}

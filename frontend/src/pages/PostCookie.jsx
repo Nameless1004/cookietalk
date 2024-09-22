@@ -1,7 +1,7 @@
 import FormInput from '../components/inputs/FormInput.jsx';
 import { useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
-import CookieCategorySelect from '../components/inputs/CookieCategorySelect.jsx';
+import CookieCategorySelect from '../components/postCookie/CookieCategorySelect.jsx';
 import SeriesModal from '../components/modals/SeriesModal.jsx';
 import Button from '../components/inputs/Button.jsx';
 import { X } from 'lucide-react';
@@ -42,8 +42,11 @@ const PostCookie = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className='relative w-full h-full'>
+      <form
+        className='flex flex-col gap-y-5'
+        onSubmit={handleSubmit}
+      >
         <FormInput
           label='쿠키 제목 *'
           placeholder='제목을 입력해주세요.'
@@ -89,14 +92,16 @@ const PostCookie = () => {
             </div>
           ) : (
             <div>
-              <button
+              <Button
                 type='button'
+                styleType='sub'
+                className='rounded py-1 px-2 hover:shadow hover:-shadow--secondary-orange'
                 onClick={() => {
                   setShowSeriesModal(true);
                 }}
               >
                 시리즈에 추가하기
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -108,12 +113,13 @@ const PostCookie = () => {
           setFormValue={setPostValues}
           placeholder='상세 설명을 입력해주세요.'
         />
-        <button
+        <Button
           type='submit'
-          className='rounded bg-black text-white px-3 py-1'
+          styleType='primary'
+          className='absolute bottom-10 right-10 font-bold rounded px-3 py-1 w-[100px]'
         >
-          등록하기
-        </button>
+          게시하기
+        </Button>
       </form>
       {showSeriesModal ? (
         <SeriesModal

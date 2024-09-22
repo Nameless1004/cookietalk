@@ -1,4 +1,4 @@
-import SelectButton from './SelectButton.jsx';
+import SelectButton from '../inputs/SelectButton.jsx';
 import COOKIE_CATEGORIES from '../../constant/cookieCaterogies.js';
 
 const CookieCategorySelect = ({ label, formValue, setFormValue }) => {
