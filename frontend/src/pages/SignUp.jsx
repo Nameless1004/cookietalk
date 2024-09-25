@@ -68,7 +68,8 @@ const SignUp = () => {
         <Button
           type='submit'
           styleType='primary'
-          className='w-full mt-3'
+          sizeType='full'
+          className='mt-3'
         >
           등록하기
         </Button>
