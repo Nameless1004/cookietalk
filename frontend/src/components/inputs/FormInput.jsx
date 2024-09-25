@@ -4,7 +4,7 @@ const FormInput = ({ name, label, type, className, formValue, setFormValue, ...p
   };
 
   return (
-    <div className='flex gap-5'>
+    <div className='grid grid-cols-[1fr_2fr]'>
       {label ? <span className='font-bold'>{label}</span> : null}
       <input
         name={name}

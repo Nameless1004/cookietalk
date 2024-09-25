@@ -14,8 +14,8 @@ const SignUp = () => {
 
   const { mutate, isSuccess, error, isError, isPending } = useSignUp();
   if (isSuccess) {
-    alert('회원가입이 완료되었습니다.');
-    <Navigate to='signIn' />;
+    alert('회원가입이 완료되었습니다. 로그인을 완료해주세요!');
+    return <Navigate to='signIn' />;
   }
 
   if (isError) {
@@ -31,7 +31,10 @@ const SignUp = () => {
   return (
     <div className='flex flex-col gap-5 justify-center items-center mt-10'>
       <h1 className='font-bold text-xl'>회원가입</h1>
-      <form onSubmit={handleSubmit}>
+      <form
+        className='flex flex-col gap-2'
+        onSubmit={handleSubmit}
+      >
         <FormInput
           label='아이디'
           name='username'
@@ -65,7 +68,7 @@ const SignUp = () => {
         <Button
           type='submit'
           styleType='primary'
-          className='w-full'
+          className='w-full mt-3'
         >
           등록하기
         </Button>
