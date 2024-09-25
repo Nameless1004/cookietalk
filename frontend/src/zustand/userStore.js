@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const useUserStore = create((set) => {
   return {
-    authenticatedUser: true,
+    authenticatedUser: false,
     signIn: () => {
       set(() => {
         return {
