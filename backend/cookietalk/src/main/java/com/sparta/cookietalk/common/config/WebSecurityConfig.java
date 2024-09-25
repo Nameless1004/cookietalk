@@ -6,6 +6,7 @@ import com.sparta.cookietalk.security.UserDetailsServiceImpl;
 import com.sparta.cookietalk.security.filter.JwtAuthenticationFilter;
 import com.sparta.cookietalk.security.filter.JwtAuthorizationFilter;
 import com.sparta.cookietalk.security.filter.JwtLogoutFilter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class WebSecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final RefreshRepository refreshRepository;
     private final AuthenticationConfiguration authenticationConfiguration;
-
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
@@ -70,14 +73,16 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
 
-        http.formLogin((formLogin) ->
-            formLogin
-                .loginPage("/api/users/login-page").permitAll()
-        );
-
 //        http.formLogin((formLogin) ->
-//            formLogin.disable()
+//            formLogin
+//                .loginPage("/api/users/login-page").permitAll()
 //        );
+        http.cors(c -> {
+            c.configurationSource(corsConfigurationSource);});
+
+        http.formLogin((formLogin) ->
+            formLogin.disable()
+        );
 
         // 필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);

@@ -13,7 +13,6 @@ import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
-import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.series.entity.Series;
