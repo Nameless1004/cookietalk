@@ -24,6 +24,7 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // TODO: 유효성검사 추가
     console.log('회원가입 전달 데이터', formValue);
     mutate(formValue);
   };

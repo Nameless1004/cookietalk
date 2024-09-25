@@ -1,5 +1,5 @@
 import AuthForm from '../components/auth/AuthForm.jsx';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 
 const SignIn = () => {
   const [formValue, setFormValue] = useState({
@@ -7,10 +7,20 @@ const SignIn = () => {
     password: '',
   });
 
+  const { mutate, isSuccess, error, isError, isPending } = useSignIn();
+  if (isSuccess) {
+    return <Navigate to='/' />;
+  }
+
+  if (isError) {
+    alert(`${error}: 로그인에 실패했습니다.`);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    // TODO: 유효성검사 추가
+    mutate(formValue);
     console.log(formValue);
-    alert('로그인에 성공했습니다');
   };
 
   return (
@@ -35,5 +45,6 @@ const SignIn = () => {
 };
 
 import { useState } from 'react';
+import { useSignIn } from '../query/userQuery.js';
 
 export default SignIn;
