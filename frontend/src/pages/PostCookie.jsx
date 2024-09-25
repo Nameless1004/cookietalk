@@ -17,7 +17,7 @@ const PostCookie = () => {
     lectureResources: null,
   });
 
-  const [showSeriesModal, setShowSeriesModal] = useState(true);
+  const [showSeriesModal, setShowSeriesModal] = useState(false);
 
   const handleVideoChange = (file) => {
     setPostValues({ ...postValues, video: file });
