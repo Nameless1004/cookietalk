@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import FormInput from '../components/inputs/FormInput.jsx';
-import Button from '../components/inputs/Button.jsx';
 import { useSignUp } from '../query/userQuery.js';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import AuthForm from '../components/auth/AuthForm.jsx';
 
 const SignUp = () => {
   const [formValue, setFormValue] = useState({
@@ -25,55 +24,27 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('회원가입 전달 데이터', formValue);
     mutate(formValue);
   };
 
   return (
-    <div className='flex flex-col gap-5 justify-center items-center mt-10'>
-      <h1 className='font-bold text-xl'>회원가입</h1>
-      <form
-        className='flex flex-col gap-2'
+    <div className='flex flex-col items-center gap-3'>
+      <AuthForm
+        mode='signup'
         onSubmit={handleSubmit}
-      >
-        <FormInput
-          label='아이디'
-          name='username'
-          formValue={formValue}
-          setFormValue={setFormValue}
-          placeholder='아이디를 입력해주세요.'
-        />
-        <FormInput
-          label='비밀번호'
-          name='password'
-          type='password'
-          formValue={formValue}
-          setFormValue={setFormValue}
-          placeholder='비밀번호를 입력해주세요.'
-        />
-        <FormInput
-          label='이메일'
-          name='email'
-          formValue={formValue}
-          setFormValue={setFormValue}
-          type='email'
-          placeholder='이메일을 입력해주세요.'
-        />
-        <FormInput
-          label='닉네임'
-          name='nickname'
-          formValue={formValue}
-          setFormValue={setFormValue}
-          placeholder='닉네임을 입력해주세요.'
-        />
-        <Button
-          type='submit'
-          styleType='primary'
-          sizeType='full'
-          className='mt-3'
+        formValue={formValue}
+        setFormValue={setFormValue}
+      />
+      <p>
+        이미 계정이 있으신가요?{' '}
+        <Link
+          className='-text--primary-orange'
+          to='/signIn'
         >
-          등록하기
-        </Button>
-      </form>
+          로그인
+        </Link>
+      </p>
     </div>
   );
 };
