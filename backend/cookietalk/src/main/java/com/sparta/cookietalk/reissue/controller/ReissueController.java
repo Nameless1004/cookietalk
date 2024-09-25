@@ -5,6 +5,7 @@ import com.sparta.cookietalk.reissue.service.ReissueService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +20,7 @@ public class ReissueController {
     public ResponseEntity<ResponseDto<Void>> reissue(HttpServletRequest request, HttpServletResponse response) {
         ResponseDto<Void> reissue = reissueService.reissue(request, response);
 
-        return ResponseEntity.status(reissue.getStatusCode()).body(reissue);
+        return ResponseDto.toEntity(reissue);
     }
 
 }
