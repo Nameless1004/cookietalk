@@ -3,17 +3,13 @@ package com.sparta.cookietalk.reissue.service;
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.common.enums.UserRole;
-import com.sparta.cookietalk.reissue.entity.RefreshEntity;
-import com.sparta.cookietalk.reissue.repository.RefreshRepository;
 import com.sparta.cookietalk.security.JwtUtil;
+import com.sparta.cookietalk.user.dto.UserResponse.Reissue;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,82 +17,64 @@ import org.springframework.stereotype.Service;
 public class ReissueService {
 
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public ResponseDto<Void> reissue(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = null;
-        Cookie oldCookie = null;
-        for (Cookie cookie : request.getCookies()) {
-            if (cookie.getName()
-                .equals(TokenType.REFRESH.name())) {
-                oldCookie = cookie;
-                refreshToken = cookie.getValue();
-                break;
-            }
+    public ResponseDto<?> reissue(String refreshToken) {
+
+        if(refreshToken == null) {
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "재발급하려면 리프레쉬 토큰이 필요합니다.", null);
         }
 
-        if (refreshToken == null) {
-            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token null");
+        // 프론트에서 붙여준 Bearer prefix 제거
+        try{
+            refreshToken = jwtUtil.substringToken(refreshToken);
+        } catch (NullPointerException e) {
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "잘못된 토큰 형식 입니다.", null);
         }
 
-        // decode 해준 후 prefix 제거
-        refreshToken = jwtUtil.substringToken(jwtUtil.getDecodeToken(refreshToken));
+        // 리프레쉬 토큰인지 검사
+        String category = jwtUtil.getCategory(refreshToken);
+        if (!category.equals(TokenType.REFRESH.name())) {
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "리프레쉬 토큰이 아닙니다.");
+        }
 
-        // Refresh token 만료 검증
-        try {
+        // 토큰 만료 검사
+        try{
             jwtUtil.isExpired(refreshToken);
         } catch (ExpiredJwtException e) {
-            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token expired");
+            return ResponseDto.of(HttpStatus.UNAUTHORIZED, "만료된 리프레쉬 토큰입니다.", null);
         }
 
-        // 토큰이 refresh인지 체크
-        String categry = jwtUtil.getCategory(refreshToken);
-        if (!categry.equals(TokenType.REFRESH.name())) {
-            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token invalid");
+
+        String username = jwtUtil.getUsername(refreshToken);
+        // 레디스에서 리프레쉬 토큰을 가져온다.
+        refreshToken = (String) redisTemplate.opsForValue().get(username);
+
+        if (refreshToken == null) {
+            return ResponseDto.of(HttpStatus.UNAUTHORIZED, "만료된 리프레쉬 토큰입니다.", null);
         }
 
-        // DB에 저장되어 있는지 확인
-        boolean isExist = refreshRepository.existsByRefresh(refreshToken);
-        if (!isExist) {
-            return ResponseDto.of(HttpStatus.BAD_REQUEST, "refresh token invalid");
-        }
+        // 검증이 통과되었다면 refresh 토큰으로 액세스 토큰을 발행해준다.
 
-        String userEmail = jwtUtil.getUsername(refreshToken);
+
         String role = jwtUtil.getRole(refreshToken);
 
         // 새 토큰 발급
-        String newAccessToken = jwtUtil.createToken(TokenType.ACCESS, userEmail,
-            UserRole.valueOf(role));
-        String newRefreshToken = jwtUtil.createToken(TokenType.REFRESH, userEmail,
-            UserRole.valueOf(role));
+        String newAccessToken = jwtUtil.createAccessToken(username, UserRole.valueOf(role), false);
+        String newRefreshToken = jwtUtil.createRefreshToken(username, UserRole.valueOf(role), false);
 
-        // Refresh 토큰 저장소에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
-        refreshRepository.deleteByRefresh(refreshToken);
+        // TTL 새로해서
+        Long ttl = redisTemplate.getExpire(username);
+        redisTemplate.opsForValue().set(username, newAccessToken);
+        if(ttl != null && ttl > 0) {
+            redisTemplate.expire(username, ttl, TimeUnit.MILLISECONDS);
+        } else {
+            return ResponseDto.of(HttpStatus.UNAUTHORIZED, "만료된 리프레쉬 토큰입니다.", null);
+        }
 
-        // 새로 발급한 토큰에 prefix를 제거 해준 후 저장
-        addRefreshEntity(userEmail, jwtUtil.substringToken(newRefreshToken));
+        Reissue reissue = new Reissue(newAccessToken, newRefreshToken);
 
-        oldCookie.setMaxAge(0);
-        jwtUtil.addTokenToHeader(response, newAccessToken);
-        jwtUtil.addCookie(response, TokenType.REFRESH, newRefreshToken);
-        return  ResponseDto.of(HttpStatus.OK);
+        return  ResponseDto.of(HttpStatus.OK, "", reissue);
     }
-    /**
-     * 리프레쉬 토큰 테이블에 추가
-     *
-     * @param username
-     * @param refreshToken
-     */
-    private void addRefreshEntity(String username, String refreshToken) {
-        Long refreshTokenTime = TokenType.REFRESH.getLifeTime();
-        Date date = new Date(System.currentTimeMillis() + refreshTokenTime);
 
-        RefreshEntity refreshEntity = RefreshEntity.builder()
-            .username(username)
-            .refresh(refreshToken)
-            .expiration(date.toString())
-            .build();
-
-        refreshRepository.save(refreshEntity);
-    }
 }

@@ -1,5 +1,7 @@
 package com.sparta.cookietalk.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.reissue.repository.RefreshRepository;
 import com.sparta.cookietalk.security.JwtUtil;
@@ -13,17 +15,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.filter.GenericFilterBean;
 
 @Slf4j(topic = "Logout")
 public class JwtLogoutFilter extends GenericFilterBean {
 
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public JwtLogoutFilter(JwtUtil jwtUtil, RefreshRepository refreshRepository) {
+    public JwtLogoutFilter(JwtUtil jwtUtil, RedisTemplate<String, Object> redisTemplate) {
         this.jwtUtil = jwtUtil;
-        this.refreshRepository = refreshRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -49,57 +54,31 @@ public class JwtLogoutFilter extends GenericFilterBean {
             filterChain.doFilter(request, response);
             return;
         }
-        // ----------------------------------------
 
-        // 리프레쉬 토큰 쿠키에서 가져오기
-        String refreshToken = null;
-        for (Cookie cookie : request.getCookies()) {
-            if (cookie.getName()
-                .equals(TokenType.REFRESH.name())) {
-                refreshToken = cookie.getValue();
-                break;
-            }
-        }
+        // 헤더에 액세스 토큰 있는지 검사
+        String accessToken = jwtUtil.getAccessTokenFromRequestHeader(request);
+        ObjectMapper mapper = new ObjectMapper();
+        if(!jwtUtil.canSubstringToken(accessToken)){
+            ResponseDto<Void> errorResponse = ResponseDto.of(HttpStatus.BAD_REQUEST,
+                "액세스 토큰을 헤더에 담아주세요.", null);
 
-        refreshToken = jwtUtil.getDecodeToken(refreshToken);
-        refreshToken = jwtUtil.substringToken(refreshToken);
-
-        // 토큰 없으면
-        if (refreshToken == null) {
+            String msg = mapper.writeValueAsString(mapper.writeValueAsString(errorResponse));
+            response.getWriter().write(msg);
+            response.setContentType("application/json; charset=utf-8");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        // 토큰 만료 검사
-        try {
-            jwtUtil.isExpired(refreshToken);
-        } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
+        // prefix 제거
+        accessToken = jwtUtil.substringToken(accessToken);
+        String username = jwtUtil.getUsername(accessToken);
+
+        String refreshToken = (String) redisTemplate.opsForValue().get(username);
+
+        if(refreshToken != null){
+            redisTemplate.delete(username);
         }
 
-        // 토큰이 REFRESH인지 검사
-        String category = jwtUtil.getCategory(refreshToken);
-        if (!category.equals(TokenType.REFRESH.name())) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        // DB 저장되어있는지 검사
-        boolean isExist = refreshRepository.existsByRefresh(refreshToken);
-        if (!isExist) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        refreshRepository.deleteByRefresh(refreshToken);
-
-        // Refresh 토큰 Cookie값 없애기
-        Cookie cookie = new Cookie(TokenType.REFRESH.name(), null);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-
-        response.addCookie(cookie);
         response.setStatus(HttpServletResponse.SC_OK);
     }
 }

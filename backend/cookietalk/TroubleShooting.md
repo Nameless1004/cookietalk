@@ -9,3 +9,7 @@
   * hls는 s3 업로드 실패해도 finally로 삭제 시킴
   * 문제는 s3에 있는 임시파일들
   * Video 파일들 중 cookie 아이들이 null인데 8시간이상 지난 업로드 파일들은 스케쥴링으로 삭제 
+
+# 로그인 후 필터에서 response에 유저 정보 dto 담아서 보낼 때
+* 한글이 깨져서 보임 인코딩 문제
+* application/json에 charset=utf-8 까지 추가해서 해결

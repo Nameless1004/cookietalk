@@ -1,5 +1,6 @@
 package com.sparta.cookietalk.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.security.JwtUtil;
 import com.sparta.cookietalk.security.UserDetailsServiceImpl;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j(topic = "JWT 검증 및 인가")
@@ -34,11 +36,21 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         FilterChain filterChain) throws ServletException, IOException {
         // 헤더 검증
         String accessToken = jwtUtil.getAccessTokenFromRequestHeader(req);
-        if (accessToken == null) {
+        if (!StringUtils.hasText(accessToken)) {
             filterChain.doFilter(req, res);
             return;
         }
 
+        boolean canSubstringToken = jwtUtil.canSubstringToken(accessToken);
+
+        if(!canSubstringToken) {
+            PrintWriter writer = res.getWriter();
+            writer.println("invalid access token");
+            res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        // bearer prefix 제거
         accessToken = jwtUtil.substringToken(accessToken);
         log.info(accessToken);
 
@@ -87,5 +99,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         return new UsernamePasswordAuthenticationToken(userDetails, null,
             userDetails.getAuthorities());
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // "/api/users/reissue" 경로에 대해서는 필터를 적용 x
+        String path = request.getRequestURI();
+        return path.equals("/api/users/reissue");
     }
 }

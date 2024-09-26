@@ -1,10 +1,12 @@
 package com.sparta.cookietalk.user.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.kakao.KakaoLoginResponseDto;
 import com.sparta.cookietalk.kakao.KakaoService;
 import com.sparta.cookietalk.security.JwtUtil;
+import com.sparta.cookietalk.user.dto.LoginRequestDto;
 import com.sparta.cookietalk.user.dto.SignupRequestDto;
 import com.sparta.cookietalk.user.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -13,16 +15,20 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class UserController {
@@ -41,19 +47,10 @@ public class UserController {
     }
 
     @PostMapping("/users/signup")
-    public String signup(@Valid SignupRequestDto requestDto, BindingResult bindingResult) {
-        // Validation 예외처리
-        List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-        if (fieldErrors.size() > 0) {
-            for (FieldError fieldError : bindingResult.getFieldErrors()) {
-                log.error(fieldError.getField() + " 필드 : " + fieldError.getDefaultMessage());
-            }
-            return "redirect:/api/users/signup";
-        }
-
+    public ResponseEntity<ResponseDto<Void>> signup(@RequestBody @Valid SignupRequestDto requestDto) {
         userService.signup(requestDto);
 
-        return "redirect:/api/users/login-page";
+        return ResponseDto.toEntity(HttpStatus.CREATED, "성공적으로 회원가입이 완료되었습니다.", null);
     }
 
     @GetMapping("/users/kakao/callback")

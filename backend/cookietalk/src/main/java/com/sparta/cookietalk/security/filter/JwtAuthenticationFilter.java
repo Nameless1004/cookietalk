@@ -8,14 +8,19 @@ import com.sparta.cookietalk.reissue.repository.RefreshRepository;
 import com.sparta.cookietalk.security.JwtUtil;
 import com.sparta.cookietalk.security.UserDetailsImpl;
 import com.sparta.cookietalk.user.dto.LoginRequestDto;
+import com.sparta.cookietalk.user.dto.UserResponse;
+import com.sparta.cookietalk.user.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -25,11 +30,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, RefreshRepository refreshRepository) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, RedisTemplate<String, Object> redisTemplate) {
         this.jwtUtil = jwtUtil;
-        this.refreshRepository = refreshRepository;
+        this.redisTemplate = redisTemplate;
         setFilterProcessesUrl("/api/users/login");
     }
 
@@ -64,15 +69,25 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         UserRole role = userDetails.getUser()
             .getRole();
 
-        String accessToken = jwtUtil.createToken(TokenType.ACCESS, username, role);
-        String refreshToken = jwtUtil.createToken(TokenType.REFRESH, username, role);
+        // 토큰 생성
+        String accessToken = jwtUtil.createAccessToken(username, role, false);
+        String refreshToken = jwtUtil.createRefreshToken(username, role, false);
 
-        // Refresh 레포지토리에 저장
-        // 새로 발급한 토큰에 prefix를 제거 해준 후 저장
-        addRefreshEntity(username, jwtUtil.substringToken(refreshToken));
+        // 유저 정보 response
+        ObjectMapper objectMapper = new ObjectMapper();
+        User user = userDetails.getUser();
+        UserResponse.Login loginInfo = new UserResponse.Login(user, accessToken, refreshToken);
+        System.out.println("info = " + loginInfo.toString());
+        response.setContentType("application/json;charset=UTF-8");
+        String s = objectMapper.writeValueAsString(loginInfo);
+        System.out.println("s = " + s);
 
-        jwtUtil.addTokenToHeader(response, accessToken);
-        jwtUtil.addCookie(response, TokenType.REFRESH, refreshToken);
+        // 로그인 정보(아이디, 이름, 액세스토큰, 리프레쉬 토큰) Body에 담아서 보냄
+        response.getWriter().write(s);
+
+        // 레디스에 리프레쉬 토큰 저장
+        redisTemplate.opsForValue().set(username, refreshToken, TokenType.REFRESH.getLifeTime(), TimeUnit.MILLISECONDS);
+
         response.setStatus(HttpStatus.OK.value());
     }
 
@@ -83,24 +98,5 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info(failed.getMessage());
         log.info("로그인 실패");
         response.setStatus(401);
-    }
-
-    /**
-     * Encode가 안된 토큰을 넣어줘야합니다.
-     *
-     * @param username
-     * @param refreshToken
-     */
-    private void addRefreshEntity(String username, String refreshToken) {
-        Long refreshTokenTime = TokenType.REFRESH.getLifeTime();
-        Date date = new Date(System.currentTimeMillis() + refreshTokenTime);
-
-        RefreshEntity refreshEntity = RefreshEntity.builder()
-            .username(username)
-            .refresh(refreshToken)
-            .expiration(date.toString())
-            .build();
-
-        refreshRepository.save(refreshEntity);
     }
 }

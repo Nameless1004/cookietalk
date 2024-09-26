@@ -30,6 +30,7 @@ public class JwtUtil {
 
     // Header KEY 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String REFRESH_TOKEN_HEADER = "Refresh-Token";
     // 사용자 권한 값의 KEY
     public static final String AUTHORIZATION_KEY = "auth";
     // Token 식별자
@@ -80,17 +81,20 @@ public class JwtUtil {
     }
 
     public String getAccessTokenFromRequestHeader(HttpServletRequest req) {
-        String header = req.getHeader(AUTHORIZATION_HEADER);
-        if (header == null) {
-            return null;
+        return req.getHeader(AUTHORIZATION_HEADER);
+    }
+
+    public String getRefreshTokenHeader(HttpServletRequest req) {
+        return req.getHeader(REFRESH_TOKEN_HEADER);
+    }
+
+    public boolean canSubstringToken(String token) {
+        if (StringUtils.hasText(token) && token.startsWith(BEARER_PREFIX)) {
+            return true;
         }
-        return getDecodeToken(header);
-    }
 
-    public String getDecodeToken(String token) {
-        return URLDecoder.decode(token, StandardCharsets.UTF_8);
+        return false;
     }
-
     public String substringToken(String token) {
         if (StringUtils.hasText(token) && token.startsWith(BEARER_PREFIX)) {
             return token.substring(BEARER_PREFIX.length());
@@ -98,26 +102,6 @@ public class JwtUtil {
 
         log.error("Not Found Token");
         throw new NullPointerException("Not Found Token");
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException | SignatureException e) {
-            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
-        } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token, 만료된 JWT token 입니다.");
-        } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
-        } catch (IllegalArgumentException e) {
-            log.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
-        }
-
-        return false;
     }
 
     public String getUsername(String token) {
@@ -182,5 +166,32 @@ public class JwtUtil {
         cookie.setMaxAge(0); // 만료 시간을 0으로 설정하여 쿠키 삭제
         cookie.setPath("/"); // 경로를 설정 (쿠키가 설정된 경로와 일치해야 함)
         response.addCookie(cookie); // 응답에 쿠키 추가
+    }
+
+    public String createAccessToken(String username, UserRole role, boolean includePrefix) {
+        Date now = new Date();
+
+        String prefix = includePrefix ? BEARER_PREFIX : "";
+        return prefix + Jwts.builder()
+            .claim("category", TokenType.ACCESS.name())
+            .expiration(new Date(now.getTime() + TokenType.ACCESS.getLifeTime()))
+            .claim("username", username)
+            .claim(AUTHORIZATION_KEY, role.getAuthority())
+            .issuedAt(now)
+            .signWith(key)
+            .compact();
+    }
+
+    public String createRefreshToken(String username, UserRole role, boolean includePrefix) {
+        Date now = new Date();
+        String prefix = includePrefix ? BEARER_PREFIX : "";
+        return prefix + Jwts.builder()
+            .claim("category", TokenType.REFRESH.name())
+            .expiration(new Date(now.getTime() + TokenType.REFRESH.getLifeTime()))
+            .claim("username", username)
+            .claim(AUTHORIZATION_KEY, role.getAuthority())
+            .issuedAt(now)
+            .signWith(key)
+            .compact();
     }
 }
