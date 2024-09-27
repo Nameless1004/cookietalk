@@ -1,0 +1,39 @@
+services:
+  spring:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint:
+    container_name: spring-app
+    volumes:
+      - hls-volume:/temp/videos/hls-output  # 명명된 볼륨
+      - save-volume:/temp/save  # 명명된 볼륨
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - HLS_OUTPUT=/temp/videos/hls-output
+      - LOCAL_SAVE=/temp/save
+    networks:
+      - app-network
+  mysql:
+    image: mysql:8.3
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: 'cookietalk'
+    networks:
+      - app-network
+  redis:
+    image: redis:alpine
+    container_name: redis
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  hls-volume:
+  save-volume:
