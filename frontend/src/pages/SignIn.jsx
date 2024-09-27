@@ -1,5 +1,8 @@
 import AuthForm from '../components/auth/AuthForm.jsx';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSignIn } from '../query/userQuery.js';
+import { authValidate } from '../utilities/validate.js';
 
 const SignIn = () => {
   const [formValue, setFormValue] = useState({
@@ -8,19 +11,28 @@ const SignIn = () => {
   });
 
   const { mutate, isSuccess, error, isError, isPending } = useSignIn();
-  if (isSuccess) {
-    return <Navigate to='/' />;
-  }
 
-  if (isError) {
-    alert(`${error}: 로그인에 실패했습니다.`);
-  }
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isSuccess) {
+      navigate('/');
+    }
+
+    if (isError) {
+      alert(`${error}: 로그인에 실패했습니다.`);
+    }
+  }, [isSuccess, isError]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 유효성검사 추가
+
+    const { isValid, message } = authValidate({ input: formValue, mode: 'signin' });
+    if (!isValid) {
+      alert(message);
+      return;
+    }
+
     mutate(formValue);
-    console.log(formValue);
   };
 
   return (
@@ -43,8 +55,5 @@ const SignIn = () => {
     </div>
   );
 };
-
-import { useState } from 'react';
-import { useSignIn } from '../query/userQuery.js';
 
 export default SignIn;

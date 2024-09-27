@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { postSignIn, postSignUp } from '../api/userRequest.js';
 import useUserStore from '../zustand/userStore.js';
 
@@ -14,12 +14,11 @@ export const useSignUp = () => {
 };
 
 export const useSignIn = () => {
-  const queryClient = useQueryClient();
+  const { signIn } = useUserStore((state) => state);
   const { mutate, isPending, error, isError, isSuccess } = useMutation({
     mutationFn: postSignIn,
     onSuccess: (data) => {
-      const { username, nickname, accessToken } = data[0];
-      const { signIn } = useUserStore((state) => state);
+      const { username, nickname, accessToken } = data;
       signIn({ username, nickname, accessToken });
     },
     onError: (error) => {

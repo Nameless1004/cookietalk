@@ -6,6 +6,7 @@ const AuthForm = ({ onSubmit, mode, formValue, setFormValue }) => {
     <div className='flex flex-col gap-5 justify-center items-center mt-10'>
       <h1 className='font-bold text-xl'>{mode === 'signup' ? '회원가입' : '로그인'}</h1>
       <form
+        noValidate
         className='flex flex-col gap-2'
         onSubmit={onSubmit}
       >

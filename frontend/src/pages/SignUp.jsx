@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSignUp } from '../query/userQuery.js';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthForm from '../components/auth/AuthForm.jsx';
+import { authValidate } from '../utilities/validate.js';
 
 const SignUp = () => {
   const [formValue, setFormValue] = useState({
@@ -11,21 +12,30 @@ const SignUp = () => {
     nickname: '',
   });
 
-  const { mutate, isSuccess, error, isError, isPending } = useSignUp();
-  if (isSuccess) {
-    alert('회원가입이 완료되었습니다. 로그인을 완료해주세요!');
-    return <Navigate to='signIn' />;
-  }
+  const navigate = useNavigate();
 
-  if (isError) {
-    alert(`${error}: 회원가입이 실패했습니다. 다시 한번 시도해주세요.`);
-    window.location.reload();
-  }
+  const { mutate, isSuccess, error, isError, isPending } = useSignUp();
+
+  useEffect(() => {
+    if (isSuccess) {
+      alert('회원가입에 성공했습니다. 로그인을 완료해주세요!');
+      navigate('/signin');
+    }
+
+    if (isError) {
+      alert(`${error}: 회원가입에 실패했습니다. 다시 한번 시도해주세요.`);
+    }
+  }, [isSuccess, isError]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 유효성검사 추가
-    console.log('회원가입 전달 데이터', formValue);
+
+    const { isValid, message } = authValidate({ input: formValue, mode: 'signup' });
+    if (!isValid) {
+      alert(message);
+      return;
+    }
+
     mutate(formValue);
   };
 
