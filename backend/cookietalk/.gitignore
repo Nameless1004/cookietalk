@@ -1,5 +1,6 @@
 # yml 세팅 파일
-application.yml
+application*.yml
+
 
 # Created by https://www.toptal.com/developers/gitignore/api/intellij+iml,gradle,java
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij+iml,gradle,java

@@ -23,6 +23,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,6 +52,11 @@ public class UserController {
         userService.signup(requestDto);
 
         return ResponseDto.toEntity(HttpStatus.CREATED, "성공적으로 회원가입이 완료되었습니다.", null);
+    }
+
+    @PostMapping("/users/logout")
+    public ResponseEntity<?> logout(@RequestHeader(JwtUtil.AUTHORIZATION_HEADER) String accessToken) {
+        return ResponseDto.toEntity(userService.logout(accessToken));
     }
 
     @GetMapping("/users/kakao/callback")

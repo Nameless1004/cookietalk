@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -34,19 +35,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
         FilterChain filterChain) throws ServletException, IOException {
-        // 헤더 검증
+
         String accessToken = jwtUtil.getAccessTokenFromRequestHeader(req);
         if (!StringUtils.hasText(accessToken)) {
-            filterChain.doFilter(req, res);
+            writeErrorMessage(res, "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
             return;
         }
 
         boolean canSubstringToken = jwtUtil.canSubstringToken(accessToken);
 
         if(!canSubstringToken) {
-            PrintWriter writer = res.getWriter();
-            writer.println("invalid access token");
-            res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            writeErrorMessage(res, "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
             return;
         }
 
@@ -59,11 +58,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
             // response body
-            PrintWriter writer = res.getWriter();
-            writer.println("access token expired");
-
-            // response status code
-            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            writeErrorMessage(res, "액세스 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED);
             return;
         }
 
@@ -72,9 +67,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         if (!category.equals(TokenType.ACCESS.name())) {
 
             // reponse body
-            PrintWriter writer = res.getWriter();
-            writer.println("invalid access token");
-            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            writeErrorMessage(res, "액세스 토큰이 아닙니다.", HttpStatus.UNAUTHORIZED);
             return;
         }
 
@@ -105,6 +98,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         // "/api/users/reissue" 경로에 대해서는 필터를 적용 x
         String path = request.getRequestURI();
-        return path.equals("/api/users/reissue");
+        return path.equals("/api/users/reissue") || path.equals("/api/users/signup") || path.equals("/api/users/login") || path.equals("/api/users/logout")
+            || path.startsWith("/");
+    }
+
+    private void writeErrorMessage(HttpServletResponse res, String message, HttpStatus code) throws IOException {
+        res.setContentType("application/json");
+        res.setStatus(code.value());
+        res.getWriter().write("{ \"statusCode\":" +  code.value() + ", " + "\"message\": " + "\""+ message + "\"" + "}");
     }
 }

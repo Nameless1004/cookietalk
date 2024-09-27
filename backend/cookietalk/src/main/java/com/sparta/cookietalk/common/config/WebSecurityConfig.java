@@ -1,12 +1,9 @@
 package com.sparta.cookietalk.common.config;
 
-import com.sparta.cookietalk.reissue.repository.RefreshRepository;
 import com.sparta.cookietalk.security.JwtUtil;
 import com.sparta.cookietalk.security.UserDetailsServiceImpl;
 import com.sparta.cookietalk.security.filter.JwtAuthenticationFilter;
 import com.sparta.cookietalk.security.filter.JwtAuthorizationFilter;
-import com.sparta.cookietalk.security.filter.JwtLogoutFilter;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -21,8 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -88,7 +83,6 @@ public class WebSecurityConfig {
         // 필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new JwtLogoutFilter(jwtUtil, redisTemplate), LogoutFilter.class);
         return http.build();
     }
 

@@ -2,6 +2,7 @@ package com.sparta.cookietalk.channel.entity;
 
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.series.entity.Series;
+import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,6 +27,12 @@ public class Channel {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "upload_id")
+    private UploadFile profileImage;
+
+    private String description;
 
     @OneToMany(mappedBy = "channel")
     private List<Cookie> cookies = new ArrayList<>();
