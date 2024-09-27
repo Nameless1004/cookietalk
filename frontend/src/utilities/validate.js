@@ -1,4 +1,5 @@
 const onlyBlankRegex = /^\s*$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const newSeiresValidate = (input, seriesList) => {
   if (onlyBlankRegex.test(input)) {
@@ -41,6 +42,50 @@ export const cookiePostValidate = (input) => {
       isValid: false,
       message: '카테고리를 선택해주세요.',
     };
+  }
+
+  return {
+    isValid: true,
+    message: null,
+  };
+};
+
+export const authValidate = ({ input, mode }) => {
+  if (onlyBlankRegex.test(input.username)) {
+    return {
+      isValid: false,
+      message: '아이디를 입력해주세요.',
+    };
+  }
+
+  if (onlyBlankRegex.test(input.password)) {
+    return {
+      isValid: false,
+      message: '비밀번호를 입력해주세요.',
+    };
+  }
+
+  if (mode === 'signup') {
+    if (onlyBlankRegex.test(input.email)) {
+      return {
+        isValid: false,
+        message: '이메일을 입력해주세요.',
+      };
+    }
+
+    if (!emailRegex.test(input.email)) {
+      return {
+        isValid: false,
+        message: '이메일 형식을 확인해주세요.',
+      };
+    }
+
+    if (onlyBlankRegex.test(input.nickname)) {
+      return {
+        isValid: false,
+        message: '닉네임을 입력해주세요',
+      };
+    }
   }
 
   return {

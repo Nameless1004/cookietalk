@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSignUp } from '../query/userQuery.js';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthForm from '../components/auth/AuthForm.jsx';
+import { authValidate } from '../utilities/validate.js';
 
 const SignUp = () => {
   const [formValue, setFormValue] = useState({
@@ -23,14 +24,18 @@ const SignUp = () => {
 
     if (isError) {
       alert(`${error}: 회원가입에 실패했습니다. 다시 한번 시도해주세요.`);
-      window.location.reload();
     }
   }, [isSuccess, isError]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 유효성검사 추가
-    console.log('회원가입 전달 데이터', formValue);
+
+    const { isValid, message } = authValidate({ input: formValue, mode: 'signup' });
+    if (!isValid) {
+      alert(message);
+      return;
+    }
+
     mutate(formValue);
   };
 

@@ -1,5 +1,8 @@
 import AuthForm from '../components/auth/AuthForm.jsx';
 import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSignIn } from '../query/userQuery.js';
+import { authValidate } from '../utilities/validate.js';
 
 const SignIn = () => {
   const [formValue, setFormValue] = useState({
@@ -22,7 +25,13 @@ const SignIn = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 유효성검사 추가
+
+    const { isValid, message } = authValidate({ input: formValue, mode: 'signin' });
+    if (!isValid) {
+      alert(message);
+      return;
+    }
+
     mutate(formValue);
   };
 
@@ -46,8 +55,5 @@ const SignIn = () => {
     </div>
   );
 };
-
-import { useEffect, useState } from 'react';
-import { useSignIn } from '../query/userQuery.js';
 
 export default SignIn;
