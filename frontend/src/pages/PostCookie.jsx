@@ -1,12 +1,13 @@
 import FormInput from '../components/inputs/FormInput.jsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
 import CookieCategorySelect from '../components/postCookie/CookieCategorySelect.jsx';
 import SeriesModal from '../components/modals/SeriesModal.jsx';
 import Button from '../components/inputs/Button.jsx';
 import { X } from 'lucide-react';
 import { cookiePostValidate } from '../utilities/validate.js';
-import { postCookie } from '../api/userRequest.js';
+import { usePostCookie } from '../query/cookieQuery.js';
+import { useNavigate } from 'react-router-dom';
 
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
@@ -20,6 +21,15 @@ const PostCookie = () => {
   });
 
   const [showSeriesModal, setShowSeriesModal] = useState(false);
+  const { mutate, error, isError, isPending } = usePostCookie();
+
+  useEffect(() => {
+    if (isError) {
+      alert(`업로드 요청 중 에러가 발생했습니다. : ${error}`);
+    }
+  }, [isError]);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,9 +40,12 @@ const PostCookie = () => {
       return;
     }
 
-    const response = await postCookie(postValues);
-    const data = await response.json();
-    console.log(data);
+    mutate(postValues, {
+      onSuccess: (cookieId) => {
+        alert('업로드가 시작되었습니다');
+        navigate(`/cookie/${cookieId}`);
+      },
+    });
   };
 
   return (
@@ -122,8 +135,9 @@ const PostCookie = () => {
           type='submit'
           styleType='primary'
           className='absolute bottom-10 right-10 font-bold rounded px-3 py-1 w-[100px]'
+          disabled={isPending || isError}
         >
-          게시하기
+          {isPending ? '처리중' : '게시하기'}
         </Button>
       </form>
       {showSeriesModal ? (

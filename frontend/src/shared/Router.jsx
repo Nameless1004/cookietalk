@@ -54,7 +54,7 @@ const Router = () => {
           element: <Channel />,
         },
         {
-          path: 'cookie',
+          path: 'cookie/:cookieId',
           element: <Cookie />,
         },
         {
