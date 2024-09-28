@@ -2,39 +2,44 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 const useUserStore = create(
-  persist((set) => {
-    return {
-      authenticatedUser: false,
-      user: {
-        userId: '',
-        userNickname: '',
-      },
-      signIn: ({ userId, userNickname }) => {
-        set(() => {
+  persist(
+    (set) => {
+      return {
+        authenticatedUser: false,
+        user: {
+          userId: '',
+          userNickname: '',
+          accessToken: '',
+        },
+        signIn: ({ userId, userNickname, accessToken }) => {
+          set(() => {
+            return {
+              authenticatedUser: true,
+              user: {
+                userId,
+                userNickname,
+                accessToken,
+              },
+            };
+          });
+        },
+        signOut: () => {
           return {
-            authenticatedUser: true,
+            authenticatedUser: false,
             user: {
-              userId,
-              userNickname,
+              userId: '',
+              userNickname: '',
+              accessToken: '',
             },
           };
-        });
-      },
-      signOut: () => {
-        return {
-          authenticatedUser: false,
-          user: {
-            userId: '',
-            userNickname: '',
-          },
-        };
-      },
-    };
-  }),
-  {
-    name: 'userStore',
-    getStorage: () => sessionStorage,
-  },
+        },
+      };
+    },
+    {
+      name: 'user',
+      getStorage: () => localStorage,
+    },
+  ),
 );
 
 export default useUserStore;

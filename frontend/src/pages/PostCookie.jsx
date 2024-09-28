@@ -6,6 +6,7 @@ import SeriesModal from '../components/modals/SeriesModal.jsx';
 import Button from '../components/inputs/Button.jsx';
 import { X } from 'lucide-react';
 import { cookiePostValidate } from '../utilities/validate.js';
+import { postCookie } from '../api/userRequest.js';
 
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
@@ -20,7 +21,7 @@ const PostCookie = () => {
 
   const [showSeriesModal, setShowSeriesModal] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { isValid, message } = cookiePostValidate(postValues);
 
@@ -29,7 +30,9 @@ const PostCookie = () => {
       return;
     }
 
-    console.log(postValues);
+    const response = await postCookie(postValues);
+    const data = await response.json();
+    console.log(data);
   };
 
   return (
