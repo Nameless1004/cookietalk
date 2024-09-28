@@ -4,7 +4,7 @@ export const postCookie = async (input) => {
   const formData = new FormData();
   formData.append(
     'create',
-    new Blob([JSON.stringify({ title: input.title, description: input.description, categoryId: 0, seriesId: null })], {
+    new Blob([JSON.stringify({ title: input.title, description: input.description, categoryId: 1, seriesId: null })], {
       type: 'application/json',
     }),
   );
@@ -14,7 +14,7 @@ export const postCookie = async (input) => {
   formData.append('attachment', input.attachment);
 
   try {
-    const response = await authCookieInstance.post('/', formData, {
+    const response = await authCookieInstance.post('', formData, {
       headers: {
         'Content-Type': 'multipart/form-data', // JSON 데이터 타입 명시
       },

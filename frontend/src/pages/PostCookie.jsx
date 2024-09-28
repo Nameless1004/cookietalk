@@ -41,9 +41,9 @@ const PostCookie = () => {
     }
 
     mutate(postValues, {
-      onSuccess: (cookieId) => {
+      onSuccess: (response) => {
         alert('업로드가 시작되었습니다');
-        navigate(`/cookie/${cookieId}`);
+        navigate(`/cookie/${response.data.cookieId}`);
       },
     });
   };
