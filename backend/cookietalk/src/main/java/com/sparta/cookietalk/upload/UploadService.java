@@ -1,16 +1,14 @@
 package com.sparta.cookietalk.upload;
 
 import com.sparta.cookietalk.amazon.AmazonS3Uploader;
-import com.sparta.cookietalk.amazon.HlsConverter;
 import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.enums.UploadType;
-import com.sparta.cookietalk.common.exceptions.ConvertFailedException;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.utils.FileUtils;
-import com.sparta.cookietalk.upload.dto.UploadFileResponse;
-import com.sparta.cookietalk.upload.dto.UploadFileResponse.Detail;
+import com.sparta.cookietalk.upload.components.Converter;
 import com.sparta.cookietalk.user.entity.User;
 import java.io.File;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,50 +22,37 @@ import org.springframework.web.multipart.MultipartFile;
 public class UploadService {
 
     private final FileUtils fileUtils;
-    private final HlsConverter hlsConverter;
+    private final Converter<File, Optional<File>> hlsConverter;
+    private final VideoUpload fileUploadAsync;
     private final AmazonS3Uploader s3Uploader;
     private final UploadFileRepository uploadFileRepository;
 
-    public UploadFileResponse.Detail uploadVideo(User user, MultipartFile file) {
+    public UploadFile uploadVideo(MultipartFile file) {
         File vod = fileUtils.saveTemp(UploadType.VIDEO, file);
 
         // s3_url은 나중에 업로드되면 지정
-
         UploadFile uploadFile = UploadFile.builder()
             .status(UploadStatus.WAITING)
             .uploadType(UploadType.VIDEO)
             .build();
 
-        final UploadFile saveFile = uploadFileRepository.save(uploadFile);
+        uploadFile = uploadFileRepository.saveAndFlush(uploadFile);
+        fileUploadAsync.uploadVideo(vod, uploadFile);
 
-        hlsConverter.convert(UploadType.VIDEO, vod)
-            .exceptionally(ex -> {
-                throw new ConvertFailedException("hls 변환 실패");
-            })
-            .thenCompose(x -> {
-                log.info("변환 성공!!!!");
-                String prefixKey =
-                    UploadType.VIDEO.getKey() + "/" + fileUtils.getFilename(x.getName());
-                log.info(prefixKey);
-                log.info("업로드 시작!!!!");
-                return s3Uploader.uploadVideoToS3(prefixKey, x.listFiles());
-            })
-            .thenAccept(result -> {
-                log.info("업로드 성공!!!!");
-                saveFile.registS3Url(result.getS3Url());
-                saveFile.registS3Key(result.getS3Key());
-                saveFile.updateStatus(UploadStatus.COMPLETED);
-                uploadFileRepository.save(saveFile);
-            })
-            .exceptionally(ex -> {
-                log.info("업로드 실패!!!!");
-                saveFile.updateStatus(UploadStatus.FAILED);
-                uploadFileRepository.save(saveFile);
-                throw new IllegalStateException("S3 업로드 실패");
-            });
+        return uploadFile;
+    }
 
-        log.info("{}", saveFile.getId());
-        return new Detail(saveFile.getId(), "");
+    public UploadFile uploadFile(UploadType uploadType, MultipartFile multipartFile) {
+        File file = fileUtils.saveTemp(uploadType, multipartFile);
+        UploadFile uploadFile = UploadFile.builder()
+            .uploadType(uploadType)
+            .status(UploadStatus.WAITING)
+            .build();
+
+        uploadFile = uploadFileRepository.saveAndFlush(uploadFile);
+        fileUploadAsync.uploadFile(uploadType, file, uploadFile);
+
+        return uploadFile;
     }
 
     public void deleteFile(User user, Long fileId) {

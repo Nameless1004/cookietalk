@@ -74,4 +74,12 @@ public class User {
     public void registChannel(Channel channel) {
         this.channel = channel;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true; // 메모리 주소가 같으면 true
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o; // 객체 캐스팅
+        return id != null && id.equals(user.id);
+    }
 }

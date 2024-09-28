@@ -7,10 +7,7 @@ public sealed interface CookieRequest permits Create {
     record Create(
         String title,
         String description,
-        Long cartegoryId,
-        Long seriesId,
-        Long videoFileId,
-        Long thumbnailFileId,
-        Long attachmentFileId
+        Long categoryId,
+        Long seriesId
         ) implements CookieRequest {}
 }

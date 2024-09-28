@@ -28,19 +28,19 @@ public class UploadController {
         return "upload";
     }
 
-    @PostMapping("/api/uploads/videos")
-    @ResponseBody
-    public ResponseEntity<ResponseDto<UploadFileResponse.Detail>> uploadVideo( @RequestPart("video") MultipartFile video){
-        Detail detail = uploadService.uploadVideo(null, video);
-        return ResponseDto.toEntity(HttpStatus.OK, detail);
-    }
-
-    @DeleteMapping("/api/uploads/files/{fileId}")
-    @ResponseBody
-    public ResponseEntity<ResponseDto<Void>> uploadVideo(@PathVariable("fileId") Long fileId) {
-        uploadService.deleteFile(null, fileId);
-        return ResponseEntity.ok(ResponseDto.of(HttpStatus.OK, "비디오 삭제에 성공하였습니다."));
-    }
+//    @PostMapping("/api/uploads/videos")
+//    @ResponseBody
+//    public ResponseEntity<ResponseDto<UploadFileResponse.Detail>> uploadVideo( @RequestPart("video") MultipartFile video){
+//        Detail detail = uploadService.uploadVideo(null, video);
+//        return ResponseDto.toEntity(HttpStatus.OK, detail);
+//    }
+//
+//    @DeleteMapping("/api/uploads/files/{fileId}")
+//    @ResponseBody
+//    public ResponseEntity<ResponseDto<Void>> uploadVideo(@PathVariable("fileId") Long fileId) {
+//        uploadService.deleteFile(null, fileId);
+//        return ResponseEntity.ok(ResponseDto.of(HttpStatus.OK, "비디오 삭제에 성공하였습니다."));
+//    }
 
 //    @PostMapping("/api/uploads/image")
 //    public String uploadImg(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestParam("image") MultipartFile file) {

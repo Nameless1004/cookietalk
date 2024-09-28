@@ -1,5 +1,5 @@
 package com.sparta.cookietalk.common.enums;
 
-public enum ProccessStatus {
+public enum ProcessStatus {
     PENDING, SUCCESS, FAILED
 }

@@ -98,8 +98,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         // "/api/users/reissue" 경로에 대해서는 필터를 적용 x
         String path = request.getRequestURI();
-        return path.equals("/api/users/reissue") || path.equals("/api/users/signup") || path.equals("/api/users/login") || path.equals("/api/users/logout")
-            || path.startsWith("/");
+        return path.equals("/api/users/reissue") || path.equals("/api/users/signup") || path.equals("/api/users/login") || path.equals("/api/users/logout");
     }
 
     private void writeErrorMessage(HttpServletResponse res, String message, HttpStatus code) throws IOException {

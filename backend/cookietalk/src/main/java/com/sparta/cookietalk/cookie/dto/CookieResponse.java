@@ -1,9 +1,10 @@
 package com.sparta.cookietalk.cookie.dto;
 
+import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Simple;
-import java.util.List;
+import java.time.LocalDateTime;
 
 public sealed interface CookieResponse permits Create, Detail, Simple {
     record Create(
@@ -14,12 +15,13 @@ public sealed interface CookieResponse permits Create, Detail, Simple {
         Long userId,
         String userNickname,
         Long cookieId,
+        ProcessStatus cookieStatus,
         String title,
         String description,
-        List<Long> linkedSeriesId,
         Long uploadFileId,
         Long thumbnailFileId,
-        Long attachmentFileId) implements CookieResponse {}
+        Long attachmentFileId,
+        LocalDateTime createdAt) implements CookieResponse {}
 
     record Simple(
         Long cookieId,

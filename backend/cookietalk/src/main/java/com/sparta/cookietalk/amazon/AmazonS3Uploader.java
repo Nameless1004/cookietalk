@@ -4,6 +4,7 @@ import com.sparta.cookietalk.common.enums.UploadType;
 import com.sparta.cookietalk.common.utils.FileUtils;
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,69 +39,73 @@ public class AmazonS3Uploader {
      * @param files
      * @return
      */
-    @Async
-    public CompletableFuture<S3UploadResponseDto> uploadVideoToS3(String prefixKey, File[] files) {
-        String m3u8Key = "";
-
+    public Optional<S3UploadResponseDto> uploadVideoToS3(String prefixKey, File[] files) {
+        String m3u8S3Key = "";
         File folder = files[0].getParentFile();
 
         try {
             for (File file : files) {
-                try {
-                    // s3에 업로드
-                    String key = prefixKey + "/" + file.getName();
-                    PutObjectRequest req = PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(key)
-                        .build();
+                uploadSingleFileToS3(prefixKey, file);
 
-                    RequestBody requestBody = RequestBody.fromFile(file);
-                    s3Client.putObject(req, requestBody);
-
-                    if (file.getName()
-                        .endsWith("m3u8")) {
-                        m3u8Key = key;
-                    }
-                } catch (AwsServiceException | SdkClientException e) {
-                    throw new IllegalStateException("S3 업로드 실패");
+                if (file.getName()
+                    .endsWith("m3u8")) {
+                    m3u8S3Key = prefixKey + "/" + file.getName();
                 }
             }
+        } catch (Exception e) {
+            handleS3UploadFailure(prefixKey, files);
+            return Optional.empty();
         } finally {
             // 임시 파일 삭제
-            fileUtils.deleteFileRecur(folder);
+            deleteTemporaryFiles(folder);
         }
 
         log.info("업로드 완료");
-        return CompletableFuture.completedFuture(S3UploadResponseDto.builder()
-            .s3Url(cloudFrontDomain + "/" + m3u8Key)
+        return Optional.of(S3UploadResponseDto.builder()
+            .s3Url(cloudFrontDomain + "/" + m3u8S3Key)
             .s3Key(prefixKey)
             .build());
     }
 
-    @Async
-    public CompletableFuture<S3UploadResponseDto> uploadFileToS3(String prefixKey, File file) {
-        try {
-            String key = prefixKey + "/" + file.getName();
-            // s3에 업로드
-            PutObjectRequest req = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
+    private void uploadSingleFileToS3(String prefixKey, File file) {
+        String key = prefixKey + "/" + file.getName();
+        PutObjectRequest req = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .build();
 
-            RequestBody requestBody = RequestBody.fromFile(file);
-            s3Client.putObject(req, requestBody);
-        } catch (AwsServiceException | SdkClientException e) {
-            log.error("File upload failed! file: {} / message: {}", file.getAbsolutePath(),
-                e.getMessage());
-        } finally {
-            fileUtils.deleteFileRecur(file);
+        RequestBody requestBody = RequestBody.fromFile(file);
+        s3Client.putObject(req, requestBody);
+    }
+
+    private void handleS3UploadFailure(String prefixKey, File[] files) {
+        log.error("S3 업로드 중 오류 발생, 업로드된 파일 삭제 중...");
+        for (File file : files) {
+            try {
+                deleteSingleFileFromS3(prefixKey, file.getName());
+            } catch (Exception e) {
+                log.error("S3에서 파일 삭제 실패: " + file.getName(), e);
+            }
         }
+    }
 
-        return CompletableFuture.completedFuture(
-            S3UploadResponseDto.builder()
-                .s3Key(prefixKey + "/" + file.getName())
-                .s3Url(cloudFrontDomain + "/" + prefixKey + "/" + file.getName())
-                .build());
+    private void deleteSingleFileFromS3(String prefixKey, String fileName) {
+        String key = prefixKey + "/" + fileName;
+        DeleteObjectRequest req = DeleteObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .build();
+        s3Client.deleteObject(req);
+    }
+
+
+    private void deleteTemporaryFiles(File folder) {
+        try {
+            fileUtils.deleteFileRecur(folder);
+            log.info("임시 파일 삭제 완료");
+        } catch (Exception e) {
+            log.error("임시 파일 삭제 실패", e);
+        }
     }
 
     /**
@@ -130,6 +135,19 @@ public class AmazonS3Uploader {
                 .key(key)
                 .build();
             s3Client.deleteObject(req);
+        }
+    }
+
+    public Optional<S3UploadResponseDto> uploadToS3(String prefixKey, File file) {
+        try{
+            uploadSingleFileToS3(prefixKey, file);
+            String key = prefixKey + "/" + file.getName();
+            return Optional.of(S3UploadResponseDto.builder()
+                    .s3Url(cloudFrontDomain + "/" + key)
+                    .s3Key(key)
+                .build());
+        } catch (Exception e) {
+            return Optional.empty();
         }
     }
 }

@@ -8,6 +8,6 @@ import lombok.Getter;
 public enum UploadType {
     VIDEO("videos"),
     IMAGE("images"),
-    REFERENCE("attachments");
+    ATTACHMENT("attachments");
     private final String key;
 }

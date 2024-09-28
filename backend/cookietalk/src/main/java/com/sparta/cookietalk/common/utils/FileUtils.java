@@ -19,7 +19,6 @@ public class FileUtils {
     public File saveTemp(UploadType uploadType, MultipartFile file) {
         try {
             String ext = getExtension(file.getOriginalFilename());
-            String fileName = getFilename(file.getOriginalFilename());
             String uuid = UUID.randomUUID()
                 .toString();
             Path path = Paths.get(localSavePath,uploadType.getKey(), uuid + "." + ext);
