@@ -30,6 +30,13 @@ export const cookiePostValidate = (input) => {
     };
   }
 
+  if (!input.thumbnail) {
+    return {
+      isValid: false,
+      message: '썸네일을 첨부해주세요.',
+    };
+  }
+
   if (!input.video) {
     return {
       isValid: false,

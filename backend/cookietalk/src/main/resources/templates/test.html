@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10 Seconds Alarm with Timer</title>
+</head>
+<body>
+<h1>10-Second Alarm with Timer</h1>
+
+<button id="startButton">Start 10 Second Timer</button>
+<div id="status">Status: Waiting...</div>
+<div id="timeLeft">Time Left: -- seconds</div>
+
+<script>
+  const startButton = document.getElementById('startButton');
+  const statusElement = document.getElementById('status');
+  const timeLeftElement = document.getElementById('timeLeft');
+
+  startButton.onclick = function() {
+    statusElement.innerText = 'Status: Timer started...';
+
+    // 서버에 알람 트리거 요청 보내기
+    fetch('/api/trigger', {
+      method: 'POST',
+    })
+    .then(response => response.text())
+    .then(data => {
+      console.log(data);
+
+      // SSE 연결 설정 (서버로부터 메시지 수신 대기)
+      const eventSource = new EventSource('/api/notification');
+
+      eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        console.log(data);
+        timeLeftElement.innerText = data;  // 화면에 남은 시간 표시
+
+        if (event.data.includes("Alarm")) {
+          statusElement.innerText =data;
+          eventSource.close(); // 알람을 받은 후 연결 종료
+        }
+      };
+
+      eventSource.onerror = function(error) {
+        console.error('SSE Error:', error);
+        eventSource.close(); // 오류 발생 시 연결 종료
+        statusElement.innerText = 'Error: Could not receive updates.';
+      };
+    })
+    .catch(error => {
+      console.error('Trigger failed:', error);
+      statusElement.innerText = 'Trigger failed. Please try again.';
+    });
+  };
+</script>
+</body>
+</html>

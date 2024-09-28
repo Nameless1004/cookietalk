@@ -1,35 +1,37 @@
 import FormInput from '../components/inputs/FormInput.jsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
 import CookieCategorySelect from '../components/postCookie/CookieCategorySelect.jsx';
 import SeriesModal from '../components/modals/SeriesModal.jsx';
 import Button from '../components/inputs/Button.jsx';
 import { X } from 'lucide-react';
 import { cookiePostValidate } from '../utilities/validate.js';
+import { usePostCookie } from '../query/cookieQuery.js';
+import { useNavigate } from 'react-router-dom';
 
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
     title: '',
+    thumbnail: null,
     video: null,
     series: null,
     description: '',
     category: null,
-    lectureResources: null,
+    attachment: null,
   });
 
   const [showSeriesModal, setShowSeriesModal] = useState(false);
+  const { mutate, error, isError, isPending } = usePostCookie();
 
-  const handleVideoChange = (file) => {
-    setPostValues({ ...postValues, video: file });
-    // TODO: 비동기로 서버에 먼저 업로드
-  };
+  useEffect(() => {
+    if (isError) {
+      alert(`업로드 요청 중 에러가 발생했습니다. : ${error}`);
+    }
+  }, [isError]);
 
-  const handleLectureResourcesChange = (file) => {
-    setPostValues({ ...postValues, lectureResources: file });
-    // TODO: 비동기로 서버에 먼저 업로드
-  };
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { isValid, message } = cookiePostValidate(postValues);
 
@@ -38,7 +40,12 @@ const PostCookie = () => {
       return;
     }
 
-    console.log(postValues);
+    mutate(postValues, {
+      onSuccess: (cookieId) => {
+        alert('업로드가 시작되었습니다');
+        navigate(`/cookie/${cookieId}`);
+      },
+    });
   };
 
   return (
@@ -55,14 +62,25 @@ const PostCookie = () => {
           setFormValue={setPostValues}
         />
         <FileInput
+          label='썸네일 *'
+          acceptType='image/*'
+          name='thumbnail'
+          value={postValues}
+          setValue={setPostValues}
+        />
+        <FileInput
           label='영상 첨부 *'
           acceptType='video/mp4'
-          setValue={handleVideoChange}
+          name='video'
+          value={postValues}
+          setValue={setPostValues}
         />
         <FileInput
           label='첨부파일'
           acceptType='.zip, .pdf'
-          setValue={handleLectureResourcesChange}
+          name='attachment'
+          value={postValues}
+          setValue={setPostValues}
         />
         <CookieCategorySelect
           label='카테고리 *'
@@ -117,8 +135,9 @@ const PostCookie = () => {
           type='submit'
           styleType='primary'
           className='absolute bottom-10 right-10 font-bold rounded px-3 py-1 w-[100px]'
+          disabled={isPending || isError}
         >
-          게시하기
+          {isPending ? '처리중' : '게시하기'}
         </Button>
       </form>
       {showSeriesModal ? (
