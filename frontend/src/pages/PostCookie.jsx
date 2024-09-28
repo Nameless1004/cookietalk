@@ -10,24 +10,15 @@ import { cookiePostValidate } from '../utilities/validate.js';
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
     title: '',
+    thumbnail: null,
     video: null,
     series: null,
     description: '',
     category: null,
-    lectureResources: null,
+    attachment: null,
   });
 
   const [showSeriesModal, setShowSeriesModal] = useState(false);
-
-  const handleVideoChange = (file) => {
-    setPostValues({ ...postValues, video: file });
-    // TODO: 비동기로 서버에 먼저 업로드
-  };
-
-  const handleLectureResourcesChange = (file) => {
-    setPostValues({ ...postValues, lectureResources: file });
-    // TODO: 비동기로 서버에 먼저 업로드
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -55,14 +46,25 @@ const PostCookie = () => {
           setFormValue={setPostValues}
         />
         <FileInput
+          label='썸네일 *'
+          acceptType='image/*'
+          name='thumbnail'
+          value={postValues}
+          setValue={setPostValues}
+        />
+        <FileInput
           label='영상 첨부 *'
           acceptType='video/mp4'
-          setValue={handleVideoChange}
+          name='video'
+          value={postValues}
+          setValue={setPostValues}
         />
         <FileInput
           label='첨부파일'
           acceptType='.zip, .pdf'
-          setValue={handleLectureResourcesChange}
+          name='attachment'
+          value={postValues}
+          setValue={setPostValues}
         />
         <CookieCategorySelect
           label='카테고리 *'
