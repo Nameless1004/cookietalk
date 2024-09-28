@@ -19,6 +19,20 @@ export const postSignIn = async (userInput) => {
   }
 };
 
+export const postSignOut = async (accessToken) => {
+  try {
+    const response = await authInstance.post('/api/users/logout', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const postCookie = async (input) => {
   const storedData = localStorage.getItem('user');
   const parsedData = JSON.parse(storedData);

@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import useUserStore from '../../zustand/userStore.js';
+import { useSignOut } from '../../query/userQuery.js';
+import { useEffect } from 'react';
 
 const Header = () => {
-  const { authenticatedUser, signOut } = useUserStore((state) => state);
+  const { authenticatedUser } = useUserStore((state) => state);
+  const { mutate, error, isError, isPending } = useSignOut();
 
   return (
     <div className='flex flex-row justify-around items-center shadow shadow-gray-400/50 w-full h-[50px]'>
@@ -12,7 +15,7 @@ const Header = () => {
         {authenticatedUser ? (
           <>
             <Link to='/postCookie'>쿠키 올리기</Link>
-            <button onClick={signOut}>로그아웃</button>
+            <button onClick={mutate}>로그아웃</button>
           </>
         ) : (
           <>
