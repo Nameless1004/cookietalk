@@ -5,7 +5,14 @@ import { useEffect } from 'react';
 
 const Header = () => {
   const { authenticatedUser } = useUserStore((state) => state);
-  const { mutate, error, isError, isPending } = useSignOut();
+  const { mutate, isError, isPending } = useSignOut();
+
+  useEffect(() => {
+    if (isError) {
+      alert('로그아웃 요청에 실패했습니다. 다시 한번 시도해주세요.');
+      location.reload();
+    }
+  }, [isError]);
 
   return (
     <div className='flex flex-row justify-around items-center shadow shadow-gray-400/50 w-full h-[50px]'>
@@ -15,7 +22,12 @@ const Header = () => {
         {authenticatedUser ? (
           <>
             <Link to='/postCookie'>쿠키 올리기</Link>
-            <button onClick={mutate}>로그아웃</button>
+            <button
+              disabled={isPending}
+              onClick={mutate}
+            >
+              {isPending ? '처리중' : '로그아웃'}
+            </button>
           </>
         ) : (
           <>
