@@ -1,11 +1,7 @@
 import axios from 'axios';
 
 const authInstance = axios.create({
-  baseURL: import.meta.env.설정하기,
-  headers: {
-    // 필요한가 ??
-    // Authorization: `Bearer ${token}`
-  },
+  baseURL: 'http://localhost:8080',
 });
 
 export default authInstance;

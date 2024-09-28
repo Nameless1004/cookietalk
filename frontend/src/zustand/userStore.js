@@ -24,14 +24,16 @@ const useUserStore = create(
           });
         },
         signOut: () => {
-          return {
-            authenticatedUser: false,
-            user: {
-              userId: '',
-              userNickname: '',
-              accessToken: '',
-            },
-          };
+          set(() => {
+            return {
+              authenticatedUser: false,
+              user: {
+                userId: '',
+                userNickname: '',
+                accessToken: '',
+              },
+            };
+          });
         },
       };
     },
