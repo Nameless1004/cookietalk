@@ -1,5 +1,4 @@
 import authInstance from './instance/authInstance.js';
-import { authCookieInstance } from './instance/cookieInstance.js';
 
 export const postSignUp = async (userInput) => {
   try {
