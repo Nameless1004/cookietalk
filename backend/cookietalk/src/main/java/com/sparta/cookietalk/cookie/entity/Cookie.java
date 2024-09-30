@@ -97,4 +97,8 @@ public class Cookie extends Timestamped {
         this.thumbnailFile = thumbnailFile;
         this.attachmentFile = attachmentFile;
     }
+
+    public void updateProcessStatus(ProcessStatus processStatus) {
+        this.proccessStatus = processStatus;
+    }
 }

@@ -4,12 +4,14 @@ import com.sparta.cookietalk.category.repository.CategoryRepository;
 import com.sparta.cookietalk.category.repository.CookieCategoryRepository;
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.channel.repository.ChannelRepository;
+import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
+import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
 import com.sparta.cookietalk.series.repository.SeriesRepository;
@@ -17,6 +19,7 @@ import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
 import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,5 +89,31 @@ public class CookieService {
             // todo: dafsd
 
         return allCookiesByChannelId;
+    }
+
+    public void onFileUploadStatusChanged(Long changedUploadFileId) {
+        Cookie cookie = cookieRepository.findByUploadFileId(changedUploadFileId);
+        UploadFile thumbnailFile = cookie.getThumbnailFile();
+        UploadFile videoFile = cookie.getVideoFile();
+        UploadFile attachmentFile = cookie.getAttachmentFile();
+
+        ArrayList<UploadFile> list = new ArrayList<>();
+        list.add(thumbnailFile);
+        list.add(videoFile);
+        log.info("비디오 상태: {}", videoFile.getStatus().name());
+        log.info("썸네일 상태: {}", thumbnailFile.getStatus().name());
+
+        if(attachmentFile != null) {
+            list.add(attachmentFile);
+        }
+
+        if(list.stream().anyMatch(x -> x.getStatus() == UploadStatus.FAILED)) {
+            cookie.updateProcessStatus(ProcessStatus.FAILED);
+            return;
+        }
+
+        if(list.stream().allMatch(x -> x.getStatus() == UploadStatus.COMPLETED)) {
+            cookie.updateProcessStatus(ProcessStatus.SUCCESS);
+        }
     }
 }
