@@ -9,6 +9,7 @@ import com.sparta.cookietalk.upload.components.Converter;
 import com.sparta.cookietalk.user.entity.User;
 import java.io.File;
 import java.util.Optional;
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,8 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UploadService {
 
     private final FileUtils fileUtils;
-    private final Converter<File, Optional<File>> hlsConverter;
-    private final VideoUpload fileUploadAsync;
+    private final FileUploader fileUploadAsync;
     private final AmazonS3Uploader s3Uploader;
     private final UploadFileRepository uploadFileRepository;
 
@@ -38,7 +38,6 @@ public class UploadService {
 
         uploadFile = uploadFileRepository.saveAndFlush(uploadFile);
         fileUploadAsync.uploadVideo(vod, uploadFile);
-
         return uploadFile;
     }
 

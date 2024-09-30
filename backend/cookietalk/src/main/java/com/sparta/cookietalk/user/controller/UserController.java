@@ -6,20 +6,15 @@ import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.kakao.KakaoLoginResponseDto;
 import com.sparta.cookietalk.kakao.KakaoService;
 import com.sparta.cookietalk.security.JwtUtil;
-import com.sparta.cookietalk.user.dto.LoginRequestDto;
-import com.sparta.cookietalk.user.dto.SignupRequestDto;
+import com.sparta.cookietalk.user.dto.UserRequest;
 import com.sparta.cookietalk.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,18 +32,8 @@ public class UserController {
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
 
-    @GetMapping("/users/login-page")
-    public String loginPage() {
-        return "login";
-    }
-
-    @GetMapping("/users/signup")
-    public String signupPage() {
-        return "signup";
-    }
-
     @PostMapping("/users/signup")
-    public ResponseEntity<ResponseDto<Void>> signup(@RequestBody @Valid SignupRequestDto requestDto) {
+    public ResponseEntity<ResponseDto<Void>> signup(@RequestBody @Valid UserRequest.Signup requestDto) {
         userService.signup(requestDto);
 
         return ResponseDto.toEntity(HttpStatus.CREATED, "성공적으로 회원가입이 완료되었습니다.", null);

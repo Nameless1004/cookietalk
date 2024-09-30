@@ -2,10 +2,8 @@ package com.sparta.cookietalk.user.service;
 
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.UserRole;
-import com.sparta.cookietalk.common.exceptions.AuthException;
-import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.security.JwtUtil;
-import com.sparta.cookietalk.user.dto.SignupRequestDto;
+import com.sparta.cookietalk.user.dto.UserRequest;
 import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -29,9 +27,9 @@ public class UserService {
     @Value("${admin.token}")
     private String ADMIN_TOKEN;
 
-    public void signup(SignupRequestDto requestDto) {
-        String username = requestDto.getUsername();
-        String password = passwordEncoder.encode(requestDto.getPassword());
+    public void signup(UserRequest.Signup requestDto) {
+        String username = requestDto.username();
+        String password = passwordEncoder.encode(requestDto.password());
 
         // 회원 중복 확인
         Optional<User> checkUsername = userRepository.findByUsername(username);
@@ -40,22 +38,22 @@ public class UserService {
         }
 
         // email 중복확인
-        String email = requestDto.getEmail();
+        String email = requestDto.email();
         Optional<User> checkEmail = userRepository.findByEmail(email);
         if (checkEmail.isPresent()) {
             throw new IllegalArgumentException("중복된 Email 입니다.");
         }
 
         // nickname 중복확인
-        String nickname = requestDto.getNickname();
+        String nickname = requestDto.nickname();
         Optional<User> checkNickname = userRepository.findByNickname(nickname);
         if (checkNickname.isPresent()) {
             throw new IllegalArgumentException("중복된 닉네임 입니다.");
         }
         // 사용자 ROLE 확인
         UserRole role = UserRole.USER;
-        if (requestDto.isAdmin()) {
-            if (!ADMIN_TOKEN.equals(requestDto.getAdminToken())) {
+        if (requestDto.admin()) {
+            if (!ADMIN_TOKEN.equals(requestDto.adminToken())) {
                 throw new IllegalArgumentException("관리자 암호가 틀려 등록이 불가능합니다.");
             }
             role = UserRole.ADMIN;
@@ -77,6 +75,7 @@ public class UserService {
 
         // prefix 제거
         String token = jwtUtil.substringToken(accessToken);
+
         try {
             jwtUtil.isExpired(token);
         } catch (ExpiredJwtException e) {

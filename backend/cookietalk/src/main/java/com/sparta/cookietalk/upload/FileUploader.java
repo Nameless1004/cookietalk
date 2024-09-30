@@ -8,14 +8,13 @@ import com.sparta.cookietalk.common.utils.FileUtils;
 import com.sparta.cookietalk.upload.components.Converter;
 import java.io.File;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class VideoUpload {
+public class FileUploader {
 
     private final Converter<File, Optional<File>> hlsConverter;
     private final AmazonS3Uploader s3Uploader;
@@ -63,6 +62,7 @@ public class VideoUpload {
 
         if(res == null){
             uploadFile.updateStatus(UploadStatus.FAILED);
+            repository.saveAndFlush(uploadFile);
             return;
         }
 

@@ -55,8 +55,6 @@ public class ReissueService {
         }
 
         // 검증이 통과되었다면 refresh 토큰으로 액세스 토큰을 발행해준다.
-
-
         String role = jwtUtil.getRole(refreshToken);
 
         // 새 토큰 발급
