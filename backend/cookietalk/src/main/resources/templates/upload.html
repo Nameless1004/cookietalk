@@ -1,0 +1,118 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--  <title>File Upload with Notification</title>-->
+<!--  <script>-->
+<!--    // 파일 업로드를 처리하는 함수-->
+<!--    function uploadFiles() {-->
+<!--      // 폼 데이터를 가져옴-->
+<!--      const formData = new FormData(document.getElementById("uploadForm"));-->
+
+<!--      // AJAX 요청 생성-->
+<!--      const xhr = new XMLHttpRequest();-->
+
+<!--      // 요청이 완료되면 실행되는 콜백 함수-->
+<!--      xhr.onreadystatechange = function() {-->
+<!--        if (xhr.readyState === 4) { // 요청이 완료되었을 때-->
+<!--          if (xhr.status === 200) { // 서버 응답이 성공적일 때-->
+<!--            document.getElementById("status").innerText = "Upload completed successfully!";-->
+<!--          } else {-->
+<!--            document.getElementById("status").innerText = "Upload failed. Please try again.";-->
+<!--          }-->
+<!--        }-->
+<!--      };-->
+
+<!--      // 비동기 POST 요청 설정-->
+<!--      xhr.open("POST", "/api/uploads/videos", true);-->
+
+<!--      // 파일 업로드 요청 전송-->
+<!--      xhr.send(formData);-->
+
+<!--      // 상태 메시지 초기화-->
+<!--      document.getElementById("status").innerText = "Uploading...";-->
+<!--    }-->
+<!--  </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h1>Upload Files</h1>-->
+
+<!--&lt;!&ndash; 파일 업로드 폼 &ndash;&gt;-->
+<!--<form id="uploadForm" enctype="multipart/form-data" onsubmit="event.preventDefault(); uploadFiles();">-->
+<!--  &lt;!&ndash; 비디오 파일 업로드 &ndash;&gt;-->
+<!--  <label for="video">Upload Video:</label>-->
+<!--  <input type="file" id="video" name="video" accept="video/*" required><br><br>-->
+
+<!--  &lt;!&ndash; 이미지 파일 업로드 &ndash;&gt;-->
+<!--  <label for="image">Upload Image:</label>-->
+<!--  <input type="file" id="image" name="image" accept="image/*" required><br><br>-->
+
+<!--  &lt;!&ndash; 참고 파일 업로드 &ndash;&gt;-->
+<!--  <label for="reference">Upload Reference:</label>-->
+<!--  <input type="file" id="reference" name="reference" accept="application/pdf,application/msword" required><br><br>-->
+
+<!--  &lt;!&ndash; 제출 버튼 &ndash;&gt;-->
+<!--  <button type="submit">Upload Files</button>-->
+<!--</form>-->
+
+<!--&lt;!&ndash; 상태 메시지를 표시할 영역 &ndash;&gt;-->
+<!--<p id="status"></p>-->
+<!--</body>-->
+<!--</html>-->
+
+<!---------------------------------------------------------------------------------->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload with Notification</title>
+  <script>
+    // 파일 업로드를 처리하는 함수
+    function uploadFiles() {
+      // 폼 데이터를 가져옴
+      const formData = new FormData(document.getElementById("uploadForm"));
+
+      // AJAX 요청 생성
+      const xhr = new XMLHttpRequest();
+
+      // 요청이 완료되면 실행되는 콜백 함수
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) { // 요청이 완료되었을 때
+          if (xhr.status === 200) { // 서버 응답이 성공적일 때
+            document.getElementById("status").innerText = "Upload completed successfully!";
+          } else {
+            document.getElementById("status").innerText = "Upload failed. Please try again.";
+          }
+        }
+      };
+
+      // 비동기 POST 요청 설정
+      xhr.open("POST", "/api/uploads/videos", true);
+
+      // 파일 업로드 요청 전송
+      xhr.send(formData);
+
+      // 상태 메시지 초기화
+      document.getElementById("status").innerText = "Uploading...";
+    }
+  </script>
+</head>
+<body>
+<h1>Upload Files</h1>
+
+<!-- 파일 업로드 폼 -->
+<form id="uploadForm" enctype="multipart/form-data" onsubmit="event.preventDefault(); uploadFiles();">
+  <!-- 비디오 파일 업로드 -->
+  <label for="video">Upload Video:</label>
+  <input type="file" id="video" name="video" accept="video/*" required><br><br>
+
+  <!-- 제출 버튼 -->
+  <button type="submit">Upload Files</button>
+</form>
+
+<!-- 상태 메시지를 표시할 영역 -->
+<p id="status"></p>
+</body>
+</html>
