@@ -9,6 +9,8 @@ import { cookiePostValidate } from '../utilities/validate.js';
 import { usePostCookie } from '../query/cookieQuery.js';
 import { useNavigate } from 'react-router-dom';
 
+const INPUT_CONTAINER_LAYOUT = 'grid grid-cols-[100px_500px]';
+
 const PostCookie = () => {
   const [postValues, setPostValues] = useState({
     title: '',
@@ -41,23 +43,24 @@ const PostCookie = () => {
     }
 
     mutate(postValues, {
-      onSuccess: (cookieId) => {
+      onSuccess: (response) => {
         alert('업로드가 시작되었습니다');
-        navigate(`/cookie/${cookieId}`);
+        navigate(`/cookie/${response.data.cookieId}`);
       },
     });
   };
 
   return (
-    <div className='relative w-full h-full'>
+    <div className='relative flex justify-center w-full h-full'>
       <form
-        className='flex flex-col gap-y-5'
+        className='flex flex-col items-start w-[700px] gap-y-5 mt-10'
         onSubmit={handleSubmit}
       >
         <FormInput
           label='쿠키 제목 *'
           placeholder='제목을 입력해주세요.'
           name='title'
+          containerStyle={INPUT_CONTAINER_LAYOUT}
           formValue={postValues}
           setFormValue={setPostValues}
         />
@@ -65,6 +68,7 @@ const PostCookie = () => {
           label='썸네일 *'
           acceptType='image/*'
           name='thumbnail'
+          containerStyle={INPUT_CONTAINER_LAYOUT}
           value={postValues}
           setValue={setPostValues}
         />
@@ -72,6 +76,7 @@ const PostCookie = () => {
           label='영상 첨부 *'
           acceptType='video/mp4'
           name='video'
+          containerStyle={INPUT_CONTAINER_LAYOUT}
           value={postValues}
           setValue={setPostValues}
         />
@@ -79,6 +84,7 @@ const PostCookie = () => {
           label='첨부파일'
           acceptType='.zip, .pdf'
           name='attachment'
+          containerStyle={INPUT_CONTAINER_LAYOUT}
           value={postValues}
           setValue={setPostValues}
         />
@@ -87,7 +93,7 @@ const PostCookie = () => {
           formValue={postValues}
           setFormValue={setPostValues}
         />
-        <div className='flex gap-5'>
+        <div className={INPUT_CONTAINER_LAYOUT}>
           <span className='font-bold'>시리즈</span>
           {postValues.series ? (
             <div className='flex items-center gap-3'>
@@ -130,6 +136,7 @@ const PostCookie = () => {
           formValue={postValues}
           setFormValue={setPostValues}
           placeholder='상세 설명을 입력해주세요.'
+          containerStyle={INPUT_CONTAINER_LAYOUT}
         />
         <Button
           type='submit'
