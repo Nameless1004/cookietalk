@@ -7,10 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ChannelRepository extends JpaRepository<Channel, Long> {
-
-    @Query("SELECT c FROM Channel c JOIN FETCH c.user WHERE c.id = :id")
-    Optional<Channel> findChannelWithUserById(@Param("id")Long id);
-
     @Query("SELECT c FROM Channel c JOIN FETCH c.user WHERE c.user.id = :id")
     Optional<Channel> findChannelWithUserByUserId(@Param("id")Long userId);
 }

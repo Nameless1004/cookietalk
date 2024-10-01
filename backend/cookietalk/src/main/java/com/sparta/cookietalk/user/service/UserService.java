@@ -32,7 +32,7 @@ public class UserService {
         String password = passwordEncoder.encode(requestDto.password());
 
         // 회원 중복 확인
-        Optional<User> checkUsername = userRepository.findByUsername(username);
+        Optional<User> checkUsername = userRepository.findUserWithChannelByUsername(username);
         if (checkUsername.isPresent()) {
             throw new IllegalArgumentException("중복된 사용자가 존재합니다.");
         }

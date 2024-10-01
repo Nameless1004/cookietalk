@@ -1,13 +1,17 @@
 package com.sparta.cookietalk.cookie.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.sparta.cookietalk.category.entity.QCategory;
 import com.sparta.cookietalk.category.entity.QCookieCategory;
 import com.sparta.cookietalk.channel.entity.QChannel;
+import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
 import com.sparta.cookietalk.cookie.entity.QCookie;
@@ -15,6 +19,7 @@ import com.sparta.cookietalk.upload.QUploadFile;
 import com.sparta.cookietalk.user.entity.QUser;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.sql.ast.tree.predicate.BooleanExpressionPredicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -61,44 +66,47 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
     }
 
     @Override
-    public Page<Detail> findAllCookiesByChannelId(Long channelId, Pageable pageable) {
+    public Page<CookieResponse.List> findCookieListByChannelId(Long channelId, Pageable pageable, boolean isMine) {
         QUser user = QUser.user;
         QCookie cookie = QCookie.cookie;
         QChannel channel = QChannel.channel;
-        QUploadFile video = new QUploadFile("videoFile");
         QUploadFile thumbnail = new QUploadFile("thumbnailFile");
-        QUploadFile attachment = new QUploadFile("attachmentFile");
         QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
+        QCategory category = QCategory.category;
 
-        System.out.println("pageable = " + pageable.getOffset());
-        System.out.println("pageable = " + pageable.getPageSize());
-        System.out.println("pageable = " + pageable.getPageNumber());
-        List<Detail> fetch = queryFactory.
-            select(Projections.constructor(Detail.class,
-                channel.id,
+        BooleanBuilder ex = new BooleanBuilder();
+
+        // 내 채널이 아니면 ProcessStatus가 성공인 쿠키만 보여줘야 된다.
+        if(!isMine) {
+            ex.and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS));
+        }
+
+        List<CookieResponse.List> fetch = queryFactory.
+            select(Projections.constructor(CookieResponse.List.class,
                 user.id,
                 user.nickname,
+                channel.id,
+                category.id,
+                category.name,
                 cookie.id,
-                cookie.proccessStatus,
                 cookie.title,
                 cookie.description,
-                video.id,
-                thumbnail.id,
-                attachment.id,
+                thumbnail.s3Url,
+                cookie.proccessStatus,
                 cookie.createdAt))
             .distinct()
-            .from(cookie)
-            .join(cookie.channel, channel).on(channel.id.eq(channelId))
+            .from(channel)
+            .join(channel.cookies, cookie)
+            .join(cookie.cookieCategories, cookieCategory)
+            .join(cookieCategory.category, category)
             .join(channel.user, user)
-            .join(cookie.videoFile, video)
             .join(cookie.thumbnailFile, thumbnail)
-            .leftJoin(cookie.attachmentFile, attachment)
+            .where(channel.id.eq(channelId).and(ex))
             .orderBy(cookie.createdAt.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
 
-        System.out.println(fetch.size());
         Long count = queryFactory.select(Wildcard.count)
             .from(cookie)
             .innerJoin(cookie.channel, channel).on(channel.id.eq(channelId))
@@ -107,10 +115,4 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
 
         return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
     }
-
-
-//    @Override
-//    public Page<List> getCookieListByChannelId(Long channelId, Pageable pageRequest) {
-//        return null;
-//    }
 }

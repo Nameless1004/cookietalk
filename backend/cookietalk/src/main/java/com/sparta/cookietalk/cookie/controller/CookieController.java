@@ -6,14 +6,11 @@ import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.cookie.dto.CookieRequest;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
-import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.service.CookieService;
 import com.sparta.cookietalk.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +18,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -62,12 +58,11 @@ public class CookieController {
         return ResponseDto.toEntity(HttpStatus.OK, details);
     }
 
-    @GetMapping("/api/channel/{channelId}/cookies")
-    public ResponseEntity<ResponseDto<Page<Detail>>> getCookiesByUserId(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable("channelId") Long channelId,
+    @GetMapping("/api/v1/users/{userId}/channel/cookies")
+    public ResponseEntity<ResponseDto<Page<List>>> getCookiesByUserId(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable("userId") Long userId,
     @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size)
     {
-        Page<Detail> result = cookieService.getCookiesByChannelId(userDetails.getUser(),
-            channelId, page, size);
+        Page<List> result = cookieService.getCookieListByUserId(userDetails.getUser(), userId, page, size);
         return ResponseDto.toEntity(HttpStatus.OK, result);
     }
 }

@@ -23,7 +23,7 @@ public class SeriesService {
     private final SeriesRepository seriesRepository;
 
     public SeriesResponse.Create createSeries(User user, Long channelId, Create request) {
-        Channel channel = channelRepository.findChannelWithUserById(channelId)
+        Channel channel = channelRepository.findChannelWithUserByUserId(user.getId())
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
 
         if(channel.getUser() != user){
@@ -36,7 +36,7 @@ public class SeriesService {
     }
 
     public void updateSeries(User user, Long channelId, Long seriesId, SeriesRequest.Patch request) {
-        Channel channel = channelRepository.findChannelWithUserById(channelId)
+        Channel channel = channelRepository.findChannelWithUserByUserId(user.getId())
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
 
         if(channel.getUser() != user){
