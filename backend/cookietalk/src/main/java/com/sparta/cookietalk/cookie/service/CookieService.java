@@ -11,13 +11,14 @@ import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
-import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
 import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
+import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class CookieService {
     private final CookieCreateFacade cookieCreateFacade;
     private final UserRepository userRepository;
 
-    public CookieResponse.Create createCookie(AuthUser auth, Create requestDto,
+    public CookieResponse.Create createCookie(User auth, Create requestDto,
         MultipartFile video,
         MultipartFile thumbnail,
         MultipartFile attachment) {
@@ -72,22 +73,16 @@ public class CookieService {
         return cookieRepository.getCookieDetails(cookieId);
     }
 
-    /**
-     * 사용자와 요청한 userId가 같다면 PENDING상태도 보여줍니다.
-     *
-     */
-    public Page<CookieResponse.Detail> getCookiesByChannelId(AuthUser auth, Long channelId, int page, int size) {
-        Channel channel = channelRepository.findChannelWithUserById(channelId)
+    public Page<CookieResponse.List> getCookieListByUserId(User auth, Long userId, int page, int size) {
+        Channel channel = channelRepository.findChannelWithUserByUserId(userId)
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
 
         Pageable pageable = PageRequest.of(page - 1, size);
-
-        Page<Detail> allCookiesByChannelId = cookieRepository.findAllCookiesByChannelId(
-            channel.getId(), pageable);
-        //if(auth.equals(channel.getUser())) {
-            // todo: dafsd
-
-        return allCookiesByChannelId;
+        if(auth.getId() == userId) {
+            return cookieRepository.findCookieListByChannelId(channel.getId(), pageable, true);
+        } else {
+            return cookieRepository.findCookieListByChannelId(channel.getId(), pageable, false);
+        }
     }
 
     public void onFileUploadStatusChanged(Long changedUploadFileId) {
