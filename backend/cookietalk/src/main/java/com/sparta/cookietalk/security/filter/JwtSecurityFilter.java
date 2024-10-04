@@ -30,7 +30,9 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        if(requestURI.startsWith("/auth/signin") || requestURI.startsWith("/auth/signup") || requestURI.startsWith("/auth/reissue")) {
+        log.info("Request URI: {}", requestURI);
+        if(requestURI.startsWith("/auth/signin") || requestURI.startsWith("/auth/signup") || requestURI.startsWith("/auth/reissue")
+        || requestURI.startsWith("/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }

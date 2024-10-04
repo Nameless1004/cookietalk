@@ -1,5 +1,6 @@
 package com.sparta.cookietalk.user.repository;
 
+import com.sparta.cookietalk.auth.dto.AuthResponse.CheckNickname;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.user.entity.User;
 import java.util.Optional;
@@ -21,4 +22,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     }
 
     Optional<User> findByUsername(String username);
+
+    boolean existsByNickname(String nickname);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByUsername(String username);
 }

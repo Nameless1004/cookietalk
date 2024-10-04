@@ -2,12 +2,17 @@ package com.sparta.cookietalk.auth;
 
 import com.sparta.cookietalk.auth.dto.AuthRequest;
 import com.sparta.cookietalk.auth.dto.AuthResponse;
+import com.sparta.cookietalk.auth.dto.AuthResponse.CheckEmail;
+import com.sparta.cookietalk.auth.dto.AuthResponse.CheckNickname;
+import com.sparta.cookietalk.auth.dto.AuthResponse.CheckUsername;
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -38,5 +43,18 @@ public class AuthController {
     public ResponseEntity<?> reissue(@RequestHeader(JwtUtil.REFRESH_TOKEN_HEADER) String refreshToken) {
         ResponseDto<?> reissue = authService.reissue(refreshToken);
         return ResponseDto.toEntity(reissue);
+    }
+
+    @GetMapping("/auth/nickname/check")
+    public ResponseEntity<ResponseDto<AuthResponse.CheckNickname>> checkNickname(@RequestBody AuthRequest.CheckNickname request) {
+        return ResponseDto.toEntity(HttpStatus.OK, authService.checkNickname(request));
+    }
+    @GetMapping("/auth/email/check")
+    public ResponseEntity<ResponseDto<AuthResponse.CheckEmail>> checkEmail(@RequestBody AuthRequest.CheckEmail request) {
+        return ResponseDto.toEntity(HttpStatus.OK, authService.checkEmail(request));
+    }
+    @GetMapping("/auth/username/check")
+    public ResponseEntity<ResponseDto<AuthResponse.CheckUsername>> checkUsername(@RequestBody AuthRequest.CheckUsername request) {
+        return ResponseDto.toEntity(HttpStatus.OK, authService.checkUsername(request));
     }
 }
