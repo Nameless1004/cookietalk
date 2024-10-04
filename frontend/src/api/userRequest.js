@@ -20,11 +20,15 @@ export const postSignIn = async (userInput) => {
 
 export const postSignOut = async (accessToken) => {
   try {
-    const response = await authInstance.post('/logout', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    const response = await authInstance.post(
+      '/logout',
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
-    });
+    );
 
     return response.data;
   } catch (error) {
