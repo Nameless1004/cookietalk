@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     default User findByIdOrElseThrow(Long userId){
         return findById(userId).orElseThrow(() -> new InvalidRequestException("존재하지 않는 사용자입니다."));
     }
+
+    Optional<User> findByUsername(String username);
 }

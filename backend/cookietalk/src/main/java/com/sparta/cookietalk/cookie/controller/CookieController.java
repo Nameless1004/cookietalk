@@ -8,7 +8,7 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.service.CookieService;
-import com.sparta.cookietalk.security.UserDetailsImpl;
+import com.sparta.cookietalk.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -37,14 +37,14 @@ public class CookieController {
     @PostMapping("/api/cookies")
     @ResponseBody
     public ResponseEntity<ResponseDto<CookieResponse.Create>> createCookie(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @AuthenticationPrincipal AuthUser authUser,
         @RequestPart CookieRequest.Create create,
         @RequestPart("video") MultipartFile video,
         @RequestPart("thumbnail") MultipartFile thumbnail,
         @RequestPart(value = "attachment", required = false) MultipartFile attachment)
         throws JsonProcessingException {
 
-        CookieResponse.Create cookie = cookieService.createCookie(userDetails.getUser(), create, video, thumbnail, attachment);
+        CookieResponse.Create cookie = cookieService.createCookie(authUser, create, video, thumbnail, attachment);
         ObjectMapper mapper = new ObjectMapper();
         ResponseDto<Create> objectResponseDto = ResponseDto.of(HttpStatus.CREATED, cookie);
         String s = mapper.writeValueAsString(objectResponseDto);
@@ -59,10 +59,10 @@ public class CookieController {
     }
 
     @GetMapping("/api/v1/users/{userId}/channel/cookies")
-    public ResponseEntity<ResponseDto<Page<List>>> getCookiesByUserId(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable("userId") Long userId,
+    public ResponseEntity<ResponseDto<Page<List>>> getCookiesByUserId(@AuthenticationPrincipal AuthUser authUser, @PathVariable("userId") Long userId,
     @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size)
     {
-        Page<List> result = cookieService.getCookieListByUserId(userDetails.getUser(), userId, page, size);
+        Page<List> result = cookieService.getCookieListByUserId(authUser, userId, page, size);
         return ResponseDto.toEntity(HttpStatus.OK, result);
     }
 }
