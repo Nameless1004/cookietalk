@@ -1,10 +1,9 @@
 package com.sparta.cookietalk.series.controller;
 
 import com.sparta.cookietalk.common.dto.ResponseDto;
-import com.sparta.cookietalk.security.UserDetailsImpl;
+import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.series.dto.SeriesRequest;
 import com.sparta.cookietalk.series.dto.SeriesResponse;
-import com.sparta.cookietalk.series.dto.SeriesResponse.Create;
 import com.sparta.cookietalk.series.service.SeriesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,19 +27,19 @@ public class SeriesController {
     public ResponseEntity<ResponseDto<SeriesResponse.Create>> registSeries(
         @PathVariable Long channelId,
         @AuthenticationPrincipal
-        UserDetailsImpl userDetails, @RequestBody SeriesRequest.Create request){
-        SeriesResponse.Create series = seriesService.createSeries(userDetails.getUser(), channelId, request);
+        AuthUser authUser, @RequestBody SeriesRequest.Create request){
+        SeriesResponse.Create series = seriesService.createSeries(authUser, channelId, request);
         return ResponseDto.toEntity(HttpStatus.CREATED, series);
     }
 
     @PatchMapping("/channels/{channelId}/series/{seriesId}")
     public ResponseEntity<ResponseDto<Void>> updateSeries(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @AuthenticationPrincipal AuthUser authUser,
         @PathVariable("channelId") Long channelId,
         @PathVariable("seriesId") Long seriesId,
         @RequestBody  SeriesRequest.Patch request
     ) {
-        seriesService.updateSeries(userDetails.getUser(), channelId, seriesId, request);
+        seriesService.updateSeries(authUser, channelId, seriesId, request);
         return ResponseDto.toEntity(HttpStatus.OK, "변경에 성공하였습니다.", null);
     }
 

@@ -14,13 +14,13 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
+import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.series.entity.Series;
 import com.sparta.cookietalk.series.entity.SeriesCookie;
 import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
 import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadService;
-import com.sparta.cookietalk.user.entity.User;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,13 +40,13 @@ public class CookieCreateFacade {
     private final CookieCategoryRepository cookieCategoryRepository;
 
     public CookieResponse.Create createCookie(
-        User user,
+        AuthUser user,
         CookieRequest.Create createDto,
         MultipartFile video,
         MultipartFile thumbnail,
         MultipartFile attachment) {
 
-        Channel channel = channelRepository.findChannelWithUserByUserId(user.getId())
+        Channel channel = channelRepository.findChannelWithUserByUserId(user.getUserId())
             .orElseThrow(() -> new InvalidRequestException("유저의 채널이 존재하지 않습니다."));
 
         Category category = categoryRepository.findById(createDto.categoryId())

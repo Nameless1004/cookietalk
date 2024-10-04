@@ -13,14 +13,13 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
+import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
 import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
-import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
 import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,7 +48,7 @@ public class CookieService {
     private final CookieCreateFacade cookieCreateFacade;
     private final UserRepository userRepository;
 
-    public CookieResponse.Create createCookie(User auth, Create requestDto,
+    public CookieResponse.Create createCookie(AuthUser auth, Create requestDto,
         MultipartFile video,
         MultipartFile thumbnail,
         MultipartFile attachment) {
@@ -77,7 +76,7 @@ public class CookieService {
      * 사용자와 요청한 userId가 같다면 PENDING상태도 보여줍니다.
      *
      */
-    public Page<CookieResponse.Detail> getCookiesByChannelId(User auth, Long channelId, int page, int size) {
+    public Page<CookieResponse.Detail> getCookiesByChannelId(AuthUser auth, Long channelId, int page, int size) {
         Channel channel = channelRepository.findChannelWithUserById(channelId)
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
 

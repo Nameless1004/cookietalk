@@ -1,22 +1,27 @@
 package com.sparta.cookietalk.common.enums;
 
+import java.util.Arrays;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum UserRole {
-    USER(Authority.USER),  // 사용자 권한
-    ADMIN(Authority.ADMIN);  // 관리자 권한
 
-    private final String authority;
+    ROLE_USER(Authority.USER),
+    ROLE_ADMIN(Authority.ADMIN);
 
-    UserRole(String authority) {
-        this.authority = authority;
-    }
+    private final String userRole;
 
-    public String getAuthority() {
-        return this.authority;
+    public static UserRole of(String role) {
+        return Arrays.stream(UserRole.values())
+            .filter(r -> r.name().equalsIgnoreCase(role))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 UserRole"));
     }
 
     public static class Authority {
-
-        public static final String USER = "USER";
-        public static final String ADMIN = "ADMIN";
+        public static final String USER = "ROLE_USER";
+        public static final String ADMIN = "ROLE_ADMIN";
     }
 }
