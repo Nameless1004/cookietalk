@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import useUserStore from '../../zustand/userStore.js';
 import { useSignOut } from '../../query/userQuery.js';
 import { useEffect } from 'react';
+import SearchInput from '../inputs/SearchInput.jsx';
 
 const Header = () => {
   const { authenticatedUser } = useUserStore((state) => state);
@@ -26,7 +27,8 @@ const Header = () => {
           />
         </Link>
       </div>
-      <div className='flex justify-center gap-5'>
+      <div className='flex justify-end gap-5 mr-[50px]'>
+        <SearchInput />
         {authenticatedUser ? (
           <>
             <Link to='/postCookie'>쿠키 올리기</Link>
