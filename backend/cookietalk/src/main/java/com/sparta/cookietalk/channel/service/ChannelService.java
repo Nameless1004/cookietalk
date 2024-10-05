@@ -8,6 +8,7 @@ import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.channel.repository.ChannelRepository;
 import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.enums.UploadType;
+import com.sparta.cookietalk.common.exceptions.AuthException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.common.exceptions.S3UploadFailedException;
 import com.sparta.cookietalk.security.AuthUser;
@@ -47,9 +48,13 @@ public class ChannelService {
             .build();
     }
 
-    public void updateProfile(MultipartFile profile, Update request, AuthUser authUser) {
+    public ChannelResponse.Profile updateProfile(MultipartFile profile, Update request, AuthUser authUser) {
         Channel channel = channelRepository.findChannelWithUserByUserId(authUser.getUserId())
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 유저입니다."));
+
+        if(authUser.getUserId() != channel.getUser().getId()) {
+            throw new AuthException("수정 권한이 없습니다.");
+        }
 
         String prefixKey = UploadType.IMAGE.getKey() + "/" + "user_" + authUser.getUserId() + "profile";
         if(channel.getProfileImage() == null){
@@ -68,5 +73,17 @@ public class ChannelService {
         }
 
         channel.updateProfile(request);
+        channel = channelRepository.save(channel);
+
+        return ChannelResponse.Profile.builder()
+            .channelId(channel.getId())
+            .userId(channel.getUser().getId())
+            .nickname(channel.getUser().getNickname())
+            .description(channel.getDescription())
+            .profileImageUrl(channel.getProfileImage().getS3Url())
+            .blogUrl(channel.getBlogUrl())
+            .githubUrl(channel.getGithubUrl())
+            .businessEmail(channel.getBusinessEmail())
+            .build();
     }
 }

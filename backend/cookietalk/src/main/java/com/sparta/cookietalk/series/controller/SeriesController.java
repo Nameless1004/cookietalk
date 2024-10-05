@@ -77,7 +77,7 @@ public class SeriesController {
      * @param userId
      * @return
      */
-    @GetMapping("/v1/users/{userId}series")
+    @GetMapping("/v1/users/{userId}/series")
     public ResponseEntity<ResponseDto<List<SeriesResponse.List>>> getUserSeriesList(
         @PathVariable("userId") Long userId
     ) {
