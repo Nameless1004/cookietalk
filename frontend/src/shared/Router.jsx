@@ -50,7 +50,7 @@ const Router = () => {
       element: <AuthenticatedRoute />,
       children: [
         {
-          path: 'channel',
+          path: 'channel/:nickname',
           element: <Channel />,
         },
         {
