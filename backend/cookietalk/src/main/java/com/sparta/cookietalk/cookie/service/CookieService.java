@@ -82,9 +82,9 @@ public class CookieService {
 
         Pageable pageable = PageRequest.of(page - 1, size);
         if(auth.getUserId() == userId) {
-            return new Page<>(cookieRepository.findCookieListByChannelId(channel.getId(), pageable, true));
+            return cookieRepository.findCookieListByChannelId(channel.getId(), pageable, true);
         } else {
-            return new Page<>(cookieRepository.findCookieListByChannelId(channel.getId(), pageable, false));
+            return cookieRepository.findCookieListByChannelId(channel.getId(), pageable, false);
         }
     }
 
@@ -123,7 +123,7 @@ public class CookieService {
     public Response.Page<List> searchKeyword(int page, int size,
         CookieSearch search) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return new Response.Page<>(cookieRepository.searchCookieListByKeyword(pageable, search));
+        return cookieRepository.searchCookieListByKeyword(pageable, search);
     }
 
     /**

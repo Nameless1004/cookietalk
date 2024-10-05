@@ -34,39 +34,43 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
 
     @Override
     public CookieResponse.Detail getCookieDetails(Long id){
-//        QCookie cookie = QCookie.cookie;
-////        QChannel channel
-//        QUser user = QUser.user;
-//        QUploadFile video = new QUploadFile("videoFile");
-//        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
-//        QUploadFile attachment = new QUploadFile("attachmentFile");
-//        QCategory category = QCategory.category;
-//        QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
-//
-//        CookieResponse.Detail c = queryFactory
-//            .select(Projections.constructor(CookieResponse.Detail.class,
-//                cookie.id,
-//                cookie.title,
-//                cookie.description,
-//                video.id,
-//                thumbnail.id,
-//                attachment.id
-//                ))
-//            .from(cookie)
-//            .innerJoin(cookieCategory).on(cookieCategory.cookie.eq(cookie))
-//            .innerJoin(category).on(cookieCategory.category.eq(category))
-//            .innerJoin(cookie.videoFile, video)
-//            .innerJoin(cookie.thumbnailFile, thumbnail)
-//            .leftJoin(cookie.attachmentFile, attachment)
-//            .innerJoin(cookie.creator, user)
-//            .where(cookie.id.eq(id))
-//            .fetchOne();
-//        return c;
-        return null;
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUser user = QUser.user;
+        QUploadFile video = new QUploadFile("videoFile");
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+        QUploadFile attachment = new QUploadFile("attachmentFile");
+        QCategory category = QCategory.category;
+        QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
+
+        CookieResponse.Detail c = queryFactory
+            .select(Projections.constructor(CookieResponse.Detail.class,
+                channel.id,
+                user.id,
+                user.nickname,
+                cookie.id,
+                cookie.proccessStatus,
+                cookie.title,
+                cookie.description,
+                video.id,
+                thumbnail.id,
+                attachment.id,
+                cookie.createdAt
+                ))
+            .distinct()
+            .from(cookie)
+            .innerJoin(cookie.channel, channel)
+            .innerJoin(channel.user, user)
+            .innerJoin(cookie.videoFile, video)
+            .innerJoin(cookie.thumbnailFile, thumbnail)
+            .leftJoin(cookie.attachmentFile, attachment)
+            .where(cookie.id.eq(id))
+            .fetchOne();
+        return c;
     }
 
     @Override
-    public Page<CookieResponse.List> findCookieListByChannelId(Long channelId, Pageable pageable, boolean isMine) {
+    public Response.Page<CookieResponse.List> findCookieListByChannelId(Long channelId, Pageable pageable, boolean isMine) {
         QUser user = QUser.user;
         QCookie cookie = QCookie.cookie;
         QChannel channel = QChannel.channel;
@@ -106,11 +110,13 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .fetchOne();
 
 
-        return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
+        count = count == null ? 0 : count;
+        double ceil = Math.ceil(count.floatValue() / (float) pageable.getPageSize());
+        return new Response.Page<>(fetch, pageable.getPageNumber(), pageable.getPageSize(), count, (int) ceil);
     }
 
     @Override
-    public Page<CookieResponse.List> searchCookieListByKeyword(Pageable pageable, CookieSearch search) {
+    public Response.Page<CookieResponse.List> searchCookieListByKeyword(Pageable pageable, CookieSearch search) {
         QUser user = QUser.user;
         QCookie cookie = QCookie.cookie;
         QChannel channel = QChannel.channel;
@@ -142,8 +148,9 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .where(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byKeyword(search.getKeyword())))
             .fetchOne();
 
-
-        return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
+        count = count == null ? 0 : count;
+        double ceil = Math.ceil(count.floatValue() / (float) pageable.getPageSize());
+        return new Response.Page<>(fetch, pageable.getPageNumber(), pageable.getPageSize(), count, (int) ceil);
     }
 
     @Override
@@ -172,7 +179,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .join(cookie.thumbnailFile, thumbnail)
             .join(cookie.channel, channel)
             .join(channel.user, user)
-            .where(cookie.createdAt.gt(cursor).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byCategory(search.getCategoryId()))))
+            .where(cookie.createdAt.lt(cursor).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byCategory(search.getCategoryId()))))
             .orderBy(cookie.createdAt.desc())
             .limit(size + 1)
             .fetch();

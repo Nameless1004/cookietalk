@@ -12,8 +12,8 @@ import org.springframework.data.domain.Slice;
 
 public interface CookieCustomRepository {
     Detail getCookieDetails(Long id);
-    Page<CookieResponse.List> findCookieListByChannelId(Long channelId, Pageable pageable, boolean isMine);
-    Page<CookieResponse.List> searchCookieListByKeyword(Pageable pageable, CookieSearch search);
+    Response.Page<CookieResponse.List> findCookieListByChannelId(Long channelId, Pageable pageable, boolean isMine);
+    Response.Page<CookieResponse.List> searchCookieListByKeyword(Pageable pageable, CookieSearch search);
 
-    Response.Slice<CookieResponse.List> getSliceByCategoryId(int size, LocalDateTime startDateTime, CookieSearch search);
+    Response.Slice<CookieResponse.List> getSliceByCategoryId(int size, LocalDateTime cursor, CookieSearch search);
 }

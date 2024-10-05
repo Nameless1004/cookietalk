@@ -100,6 +100,7 @@ public class Cookie extends Timestamped {
         this.videoFile = videoFile;
         this.thumbnailFile = thumbnailFile;
         this.attachmentFile = attachmentFile;
+        this.cookieViews = 0L;
     }
 
     public void updateProcessStatus(ProcessStatus processStatus) {
