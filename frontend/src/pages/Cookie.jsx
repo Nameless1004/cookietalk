@@ -1,19 +1,39 @@
 import { useParams } from 'react-router-dom';
+import ReactPlayer from 'react-player';
+import { useEffect, useRef, useState } from 'react';
 
 const Cookie = () => {
   const { cookieId } = useParams();
+  const playerPositionRef = useRef(null);
+  const [playerSize, setPlayerSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (playerPositionRef.current) {
+      setPlayerSize({ width: playerPositionRef.current.offsetWidth, height: playerPositionRef.current.offsetHeight });
+    }
+  }, []);
+
   return (
-    <div className='grid grid-cols-[2fr_1fr] gap-5 h-full'>
+    <div className='grid grid-cols-[2fr_1fr] gap-10 h-full'>
       <div
         id='cookieDetail'
         className='flex flex-col gap-3 bg-red-100 h-full'
       >
-        <div className='-bg--dark-gray-1 w-full h-[450px] text-white'>비디오 플레이어 자리</div>
+        <div
+          ref={playerPositionRef}
+          className='-bg--dark-gray-1 w-full aspect-video text-white'
+        >
+          <ReactPlayer
+            url='https://www.youtube.com/watch?v=wojsSCBQJVc'
+            width={playerSize.width}
+            height={playerSize.height}
+          />
+        </div>
         <div>
           <h1 className='font-bold text-2xl'>쿠키 제목</h1>
           <p className='text-lg'>작성자 닉네임</p>
         </div>
-        <div className='-bg--light-gray-1 p-3 h-[250px]'>
+        <div className='-bg--light-gray-1 p-3 h-[200px]'>
           cookie description 작성한 상세 내용이 여기에 들어가요 작성한 상세 내용이 여기에 들어가요 작성한 상세 내용이
           여기에 들어가요 작성한 상세 내용이 여기에 들어가요 작성한 상세 내용이 여기에 들어가요 작성한 상세 내용이
           여기에 들어가요{' '}
