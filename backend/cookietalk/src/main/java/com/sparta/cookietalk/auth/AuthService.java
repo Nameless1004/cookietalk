@@ -93,7 +93,7 @@ public class AuthService {
      * @return
      */
     public ResponseDto<?> signout(AuthUser user) {
-        redisTemplate.delete(String.valueOf(user.getUserId()));
+        redisTemplate.delete(Define.REDIS_REFRESH_TOKEN_KEY_PREFIX + user.getUserId());
         return ResponseDto.of(HttpStatus.OK, "로그아웃되었습니다.");
     }
 
