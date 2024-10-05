@@ -100,17 +100,14 @@ public class Cookie extends Timestamped {
         this.videoFile = videoFile;
         this.thumbnailFile = thumbnailFile;
         this.attachmentFile = attachmentFile;
+        this.cookieViews = 0L;
     }
 
     public void updateProcessStatus(ProcessStatus processStatus) {
         this.proccessStatus = processStatus;
     }
 
-    public void addViews(long views) {
-        if(views < 0) {
-            throw new InvalidRequestException("잘못된 조회수입니다. (조회수는 0보다 크거나 같아야합니다.)");
-        }
-
-        this.cookieViews += views;
+    public void incrementView() {
+        this.cookieViews++;
     }
 }

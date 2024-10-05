@@ -3,6 +3,7 @@ package com.sparta.cookietalk.series.entity;
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.common.entity.Timestamped;
 import com.sparta.cookietalk.cookie.entity.Cookie;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,7 +32,7 @@ public class Series extends Timestamped {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
-    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<SeriesCookie> seriesCookies;
 
     public Series(Channel channel, String title){

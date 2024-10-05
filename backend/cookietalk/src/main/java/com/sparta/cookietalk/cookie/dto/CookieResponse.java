@@ -27,12 +27,8 @@ public sealed interface CookieResponse permits Create, Detail, List {
     record List(
         Long userId,
         String userNickname,
-        Long channelId,
-        Long categoryId,
-        String categoryName,
         Long cookieId,
         String title,
-        String description,
         String thumbnailPath,
         ProcessStatus cookieStatus,
         LocalDateTime createdAt

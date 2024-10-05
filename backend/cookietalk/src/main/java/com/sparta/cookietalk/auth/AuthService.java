@@ -2,6 +2,7 @@ package com.sparta.cookietalk.auth;
 
 import com.sparta.cookietalk.auth.dto.AuthRequest;
 import com.sparta.cookietalk.auth.dto.AuthResponse;
+import com.sparta.cookietalk.auth.dto.AuthResponse.DuplicateCheck;
 import com.sparta.cookietalk.common.defines.Define;
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
@@ -163,5 +164,17 @@ public class AuthService {
         AuthResponse.Reissue reissue = new AuthResponse.Reissue(newAccessToken, newRefreshToken);
 
         return  ResponseDto.of(HttpStatus.OK, "", reissue);
+    }
+
+    public DuplicateCheck checkNickname(AuthRequest.CheckNickname request) {
+        return new DuplicateCheck(userRepository.existsByNickname(request.nickname()));
+    }
+
+    public DuplicateCheck checkEmail(AuthRequest.CheckEmail request) {
+        return new DuplicateCheck(userRepository.existsByEmail(request.email()));
+    }
+
+    public DuplicateCheck checkUsername(AuthRequest.CheckUsername request) {
+        return new DuplicateCheck(userRepository.existsByUsername(request.username()));
     }
 }
