@@ -18,7 +18,7 @@ const Router = () => {
       element: <Main />,
     },
     {
-      path: 'category',
+      path: 'category/:categoryId',
       element: <Category />,
     },
     {

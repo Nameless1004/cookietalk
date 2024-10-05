@@ -7,18 +7,22 @@ const useUserStore = create(
       return {
         authenticatedUser: false,
         user: {
+          id: '',
           userId: '',
-          userNickname: '',
+          nickname: '',
           accessToken: '',
+          refreshToken: '',
         },
-        signIn: ({ userId, userNickname, accessToken }) => {
+        signIn: ({ id, userId, nickname, accessToken, refreshToken }) => {
           set(() => {
             return {
               authenticatedUser: true,
               user: {
+                id,
                 userId,
-                userNickname,
+                nickname,
                 accessToken,
+                refreshToken,
               },
             };
           });

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import useUserStore from '../../zustand/userStore.js';
 import { useSignOut } from '../../query/userQuery.js';
 import { useEffect } from 'react';
+import SearchInput from '../inputs/SearchInput.jsx';
 
 const Header = () => {
   const { authenticatedUser } = useUserStore((state) => state);
@@ -15,10 +16,19 @@ const Header = () => {
   }, [isError]);
 
   return (
-    <div className='flex flex-row justify-around items-center shadow shadow-gray-400/50 w-full h-[50px]'>
-      <Link to='/'>로고</Link>
-
-      <div className='flex gap-5'>
+    <div className='grid grid-cols-3 items-center shadow shadow-gray-400/50 w-full h-[70px]'>
+      <div></div>
+      <div className='flex justify-center'>
+        <Link to='/'>
+          <img
+            width='200px'
+            src='/logo.png'
+            alt='logo'
+          />
+        </Link>
+      </div>
+      <div className='flex justify-end gap-5 mr-[50px]'>
+        <SearchInput />
         {authenticatedUser ? (
           <>
             <Link to='/postCookie'>쿠키 올리기</Link>
