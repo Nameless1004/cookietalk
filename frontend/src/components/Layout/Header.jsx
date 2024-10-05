@@ -16,7 +16,7 @@ const Header = () => {
   }, [isError]);
 
   return (
-    <div className='sticky top-0 bg-white grid grid-cols-3 items-center shadow shadow-gray-400/50 w-full h-[70px]'>
+    <div className='bg-white grid grid-cols-3 items-center shadow shadow-gray-400/50 w-full h-[70px]'>
       <div></div>
       <div className='flex justify-center'>
         <Link to='/'>
