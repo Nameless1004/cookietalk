@@ -2,9 +2,7 @@ package com.sparta.cookietalk.auth;
 
 import com.sparta.cookietalk.auth.dto.AuthRequest;
 import com.sparta.cookietalk.auth.dto.AuthResponse;
-import com.sparta.cookietalk.auth.dto.AuthResponse.CheckEmail;
-import com.sparta.cookietalk.auth.dto.AuthResponse.CheckNickname;
-import com.sparta.cookietalk.auth.dto.AuthResponse.CheckUsername;
+import com.sparta.cookietalk.auth.dto.AuthResponse.DuplicateCheck;
 import com.sparta.cookietalk.common.defines.Define;
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
@@ -168,15 +166,15 @@ public class AuthService {
         return  ResponseDto.of(HttpStatus.OK, "", reissue);
     }
 
-    public CheckNickname checkNickname(AuthRequest.CheckNickname request) {
-        return new CheckNickname(userRepository.existsByNickname(request.nickname()));
+    public DuplicateCheck checkNickname(AuthRequest.CheckNickname request) {
+        return new DuplicateCheck(userRepository.existsByNickname(request.nickname()));
     }
 
-    public CheckEmail checkEmail(AuthRequest.CheckEmail request) {
-        return new CheckEmail(userRepository.existsByEmail(request.email()));
+    public DuplicateCheck checkEmail(AuthRequest.CheckEmail request) {
+        return new DuplicateCheck(userRepository.existsByEmail(request.email()));
     }
 
-    public CheckUsername checkUsername(AuthRequest.CheckUsername request) {
-        return new CheckUsername(userRepository.existsByUsername(request.username()));
+    public DuplicateCheck checkUsername(AuthRequest.CheckUsername request) {
+        return new DuplicateCheck(userRepository.existsByUsername(request.username()));
     }
 }

@@ -14,6 +14,7 @@ import com.sparta.cookietalk.channel.entity.QChannel;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
+import com.sparta.cookietalk.cookie.dto.KeywordSearch;
 import com.sparta.cookietalk.cookie.entity.QCookie;
 import com.sparta.cookietalk.upload.QUploadFile;
 import com.sparta.cookietalk.user.entity.QUser;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -108,11 +110,65 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .fetch();
 
         Long count = queryFactory.select(Wildcard.count)
+            .distinct()
             .from(cookie)
             .innerJoin(cookie.channel, channel).on(channel.id.eq(channelId))
             .fetchOne();
 
 
         return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
+    }
+
+    @Override
+    public Page<CookieResponse.List> searchCookieList(Pageable pageable, KeywordSearch search) {
+        QUser user = QUser.user;
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+        QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
+        QCategory category = QCategory.category;
+
+        List<CookieResponse.List> fetch = queryFactory.
+            select(Projections.constructor(CookieResponse.List.class,
+                user.id,
+                user.nickname,
+                channel.id,
+                category.id,
+                category.name,
+                cookie.id,
+                cookie.title,
+                cookie.description,
+                thumbnail.s3Url,
+                cookie.proccessStatus,
+                cookie.createdAt))
+            .distinct()
+            .from(channel)
+            .join(channel.cookies, cookie)
+            .join(cookie.cookieCategories, cookieCategory)
+            .join(cookieCategory.category, category)
+            .join(channel.user, user)
+            .join(cookie.thumbnailFile, thumbnail)
+            .where(byKeyword(search.getKeyword()).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS)))
+            .orderBy(cookie.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        Long count = queryFactory.select(Wildcard.count)
+            .distinct()
+            .from(cookie)
+            .where(byKeyword(search.getKeyword()).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS)))
+            .fetchOne();
+
+
+        return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
+    }
+
+    BooleanExpression byKeyword(String keyword) {
+        if(!StringUtils.hasText(keyword)) {
+            return null;
+        }
+
+        return QCookie.cookie.title.containsIgnoreCase(keyword);
     }
 }

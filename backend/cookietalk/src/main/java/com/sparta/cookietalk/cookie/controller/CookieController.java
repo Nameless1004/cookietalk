@@ -7,6 +7,7 @@ import com.sparta.cookietalk.cookie.dto.CookieRequest;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
+import com.sparta.cookietalk.cookie.dto.KeywordSearch;
 import com.sparta.cookietalk.cookie.service.CookieService;
 import com.sparta.cookietalk.security.AuthUser;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,15 @@ public class CookieController {
     public ResponseEntity<ResponseDto<CookieResponse.Detail>> getCookieById(@PathVariable("cookieId") Long cookieId){
         CookieResponse.Detail details = cookieService.getCookie(cookieId);
         return ResponseDto.toEntity(HttpStatus.OK, details);
+    }
+
+    @GetMapping("/api/v1/cookies/search")
+    public ResponseEntity<ResponseDto<Page<List>>> searchCookie(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String keyword){
+        Page<List> lists = cookieService.searchKeyword(page, size, new KeywordSearch(keyword));
+        return ResponseDto.toEntity(HttpStatus.OK, lists);
     }
 
     @GetMapping("/api/v1/users/{userId}/channel/cookies")

@@ -2,9 +2,6 @@ package com.sparta.cookietalk.auth;
 
 import com.sparta.cookietalk.auth.dto.AuthRequest;
 import com.sparta.cookietalk.auth.dto.AuthResponse;
-import com.sparta.cookietalk.auth.dto.AuthResponse.CheckEmail;
-import com.sparta.cookietalk.auth.dto.AuthResponse.CheckNickname;
-import com.sparta.cookietalk.auth.dto.AuthResponse.CheckUsername;
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.security.JwtUtil;
@@ -46,15 +43,15 @@ public class AuthController {
     }
 
     @GetMapping("/auth/nickname/check")
-    public ResponseEntity<ResponseDto<AuthResponse.CheckNickname>> checkNickname(@RequestBody AuthRequest.CheckNickname request) {
+    public ResponseEntity<ResponseDto<AuthResponse.DuplicateCheck>> checkNickname(@RequestBody AuthRequest.CheckNickname request) {
         return ResponseDto.toEntity(HttpStatus.OK, authService.checkNickname(request));
     }
     @GetMapping("/auth/email/check")
-    public ResponseEntity<ResponseDto<AuthResponse.CheckEmail>> checkEmail(@RequestBody AuthRequest.CheckEmail request) {
+    public ResponseEntity<ResponseDto<AuthResponse.DuplicateCheck>> checkEmail(@RequestBody AuthRequest.CheckEmail request) {
         return ResponseDto.toEntity(HttpStatus.OK, authService.checkEmail(request));
     }
     @GetMapping("/auth/username/check")
-    public ResponseEntity<ResponseDto<AuthResponse.CheckUsername>> checkUsername(@RequestBody AuthRequest.CheckUsername request) {
+    public ResponseEntity<ResponseDto<AuthResponse.DuplicateCheck>> checkUsername(@RequestBody AuthRequest.CheckUsername request) {
         return ResponseDto.toEntity(HttpStatus.OK, authService.checkUsername(request));
     }
 }

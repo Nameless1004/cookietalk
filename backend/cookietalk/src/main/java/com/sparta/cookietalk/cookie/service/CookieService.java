@@ -12,6 +12,7 @@ import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
+import com.sparta.cookietalk.cookie.dto.KeywordSearch;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.security.AuthUser;
@@ -110,5 +111,10 @@ public class CookieService {
         if(list.stream().allMatch(x -> x.getStatus() == UploadStatus.COMPLETED)) {
             cookie.updateProcessStatus(ProcessStatus.SUCCESS);
         }
+    }
+
+    public Page<List> searchKeyword(int page, int size, KeywordSearch keywordSearch) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return cookieRepository.searchCookieList(pageable, keywordSearch);
     }
 }
