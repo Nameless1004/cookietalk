@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useUserStore from '../../zustand/userStore.js';
 import { useSignOut } from '../../query/userQuery.js';
 import { useEffect } from 'react';
@@ -14,6 +14,11 @@ const Header = () => {
       location.reload();
     }
   }, [isError]);
+
+  const navigate = useNavigate();
+  const handleMoveToMypage = () => {
+    navigate(`/channel/${user.nickname}`, { state: { isMyChannel: true } });
+  };
 
   return (
     <div className='bg-white grid grid-cols-3 items-center shadow shadow-gray-400/50 w-full h-[70px]'>
@@ -38,7 +43,7 @@ const Header = () => {
             >
               {isPending ? '처리중' : '로그아웃'}
             </button>
-            <Link to={`/channel/${user.nickname}`}>내 채널</Link>
+            <button onClick={handleMoveToMypage}>내 채널</button>
           </>
         ) : (
           <>
