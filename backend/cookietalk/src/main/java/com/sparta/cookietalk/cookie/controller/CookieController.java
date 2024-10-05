@@ -70,7 +70,7 @@ public class CookieController {
         return ResponseDto.toEntity(HttpStatus.OK, listPage);
     }
 
-    @GetMapping("/api/v1/category/{categoryId}/cookies")
+    @GetMapping("/api/v1/categories/{categoryId}/cookies")
     public ResponseEntity<ResponseDto<Response.Slice<List>>> getCookiesByCategoryId(
         @PathVariable("categoryId") Long categoryId,
         @RequestParam(defaultValue = "10") int size,

@@ -3,6 +3,8 @@ package com.sparta.cookietalk.amazon;
 import com.sparta.cookietalk.common.enums.UploadType;
 import com.sparta.cookietalk.common.utils.FileUtils;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.NoSuchFileException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -145,6 +148,25 @@ public class AmazonS3Uploader {
             return Optional.of(S3UploadResponseDto.builder()
                     .s3Url(cloudFrontDomain + "/" + key)
                     .s3Key(key)
+                .build());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<S3UploadResponseDto> uploadMultipartFileToS3(String prefixKey, MultipartFile file) {
+        try{
+            String key = prefixKey + "/" + file.getName();
+            PutObjectRequest req = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+            RequestBody requestBody = RequestBody.fromInputStream(file.getInputStream(), file.getSize());
+            s3Client.putObject(req, requestBody);
+            return Optional.of(S3UploadResponseDto.builder()
+                .s3Url(cloudFrontDomain + "/" + key)
+                .s3Key(key)
                 .build());
         } catch (Exception e) {
             return Optional.empty();
