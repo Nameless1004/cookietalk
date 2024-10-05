@@ -1,16 +1,56 @@
-import { CopySlash, CodeXml, Infinity, Bird } from 'lucide-react';
+import { CopySlash, CodeXml, Infinity, Bird, Smartphone, Binary, Wifi } from 'lucide-react';
 
-// TODO: 나머지 상태들 추가
-const CategoryIcon = ({ category }) => {
+const CategoryIcon = ({ category, className, ...props }) => {
   switch (category) {
     case 'backend':
-      return <CopySlash />;
+      return (
+        <CopySlash
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
     case 'frontend':
-      return <CodeXml />;
+      return (
+        <CodeXml
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
     case 'devops':
-      return <Infinity />;
+      return (
+        <Infinity
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
+    case 'iosAndroid':
+      return (
+        <Smartphone
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
+    case 'computerScience':
+      return (
+        <Binary
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
+    case 'network':
+      return (
+        <Wifi
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
     default:
-      return <Bird />;
+      return (
+        <Bird
+          className={`${className || ''}`}
+          {...props}
+        />
+      );
   }
 };
 
