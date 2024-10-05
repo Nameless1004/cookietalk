@@ -14,10 +14,10 @@ public sealed interface AuthResponse permits Signup, Signin, Reissue, KakaoLogin
         }
     }
 
-    record Signin(String userId, String userNickname, String accessToken,
+    record Signin(Long id, String userId, String userNickname, String accessToken,
                  String refreshToken) implements AuthResponse {
         public Signin(User user, String access, String refresh) {
-            this(user.getUsername(), user.getNickname(), access, refresh);
+            this(user.getId(), user.getUsername(), user.getNickname(), access, refresh);
         }
     }
 

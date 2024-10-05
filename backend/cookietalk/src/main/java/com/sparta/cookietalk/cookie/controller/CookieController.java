@@ -2,16 +2,19 @@ package com.sparta.cookietalk.cookie.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.cookietalk.common.dto.Response;
+import com.sparta.cookietalk.common.dto.Response.Slice;
 import com.sparta.cookietalk.common.dto.ResponseDto;
+import com.sparta.cookietalk.cookie.dto.CategorySearch;
 import com.sparta.cookietalk.cookie.dto.CookieRequest;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
-import com.sparta.cookietalk.cookie.dto.KeywordSearch;
+import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.service.CookieService;
 import com.sparta.cookietalk.security.AuthUser;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,12 +33,7 @@ public class CookieController {
 
     private final CookieService cookieService;
 
-    @GetMapping("/api/test")
-    public String test() {
-        return "upload";
-    }
-
-    @PostMapping("/api/cookies")
+    @PostMapping("/api/v1/cookies")
     @ResponseBody
     public ResponseEntity<ResponseDto<CookieResponse.Create>> createCookie(
         @AuthenticationPrincipal AuthUser authUser,
@@ -53,26 +51,42 @@ public class CookieController {
         return  ResponseDto.toEntity(HttpStatus.CREATED, cookie);
     }
 
-    @GetMapping("/api/cookies/{cookieId}")
+    @GetMapping("/api/v1/cookies/{cookieId}")
     public ResponseEntity<ResponseDto<CookieResponse.Detail>> getCookieById(@PathVariable("cookieId") Long cookieId){
         CookieResponse.Detail details = cookieService.getCookie(cookieId);
         return ResponseDto.toEntity(HttpStatus.OK, details);
     }
 
     @GetMapping("/api/v1/cookies/search")
-    public ResponseEntity<ResponseDto<Page<List>>> searchCookie(
+    public ResponseEntity<ResponseDto<Response.Page<List>>> searchCookie(
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String keyword){
-        Page<List> lists = cookieService.searchKeyword(page, size, new KeywordSearch(keyword));
-        return ResponseDto.toEntity(HttpStatus.OK, lists);
+
+        Response.Page<List> listPage = cookieService.searchKeyword(page, size,
+            CookieSearch.builder()
+                .keyword(keyword)
+                .build());
+        return ResponseDto.toEntity(HttpStatus.OK, listPage);
+    }
+
+    @GetMapping("/api/v1/category/{categoryId}/cookies")
+    public ResponseEntity<ResponseDto<Response.Slice<List>>> getCookiesByCategoryId(
+        @PathVariable("categoryId") Long categoryId,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam LocalDateTime startDateTime) {
+
+        Response.Slice<List> slice = cookieService.getCookieListByCategory(size, startDateTime, CookieSearch.builder()
+                .categoryId(categoryId)
+                .build());
+        return ResponseDto.toEntity(HttpStatus.OK, slice);
     }
 
     @GetMapping("/api/v1/users/{userId}/channel/cookies")
-    public ResponseEntity<ResponseDto<Page<List>>> getCookiesByUserId(@AuthenticationPrincipal AuthUser authUser, @PathVariable("userId") Long userId,
+    public ResponseEntity<ResponseDto<Response.Page<List>>> getCookiesByUserId(@AuthenticationPrincipal AuthUser authUser, @PathVariable("userId") Long userId,
     @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size)
     {
-        Page<List> result = cookieService.getCookieListByUserId(authUser, userId, page, size);
-        return ResponseDto.toEntity(HttpStatus.OK, result);
+        Response.Page<List> pageResult = cookieService.getCookieListByUserId(authUser, userId, page, size);
+        return ResponseDto.toEntity(HttpStatus.OK, pageResult);
     }
 }

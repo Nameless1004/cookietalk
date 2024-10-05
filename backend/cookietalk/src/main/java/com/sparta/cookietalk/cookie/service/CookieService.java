@@ -4,15 +4,17 @@ import com.sparta.cookietalk.category.repository.CategoryRepository;
 import com.sparta.cookietalk.category.repository.CookieCategoryRepository;
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.channel.repository.ChannelRepository;
+import com.sparta.cookietalk.common.dto.Response;
+import com.sparta.cookietalk.common.dto.Response.Page;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
+import com.sparta.cookietalk.cookie.dto.CategorySearch;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
-import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
-import com.sparta.cookietalk.cookie.dto.KeywordSearch;
+import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.security.AuthUser;
@@ -20,12 +22,11 @@ import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
 import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
-import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -75,15 +76,15 @@ public class CookieService {
         return cookieRepository.getCookieDetails(cookieId);
     }
 
-    public Page<CookieResponse.List> getCookieListByUserId(AuthUser auth, Long userId, int page, int size) {
+    public Response.Page<CookieResponse.List> getCookieListByUserId(AuthUser auth, Long userId, int page, int size) {
         Channel channel = channelRepository.findChannelWithUserByUserId(userId)
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
 
         Pageable pageable = PageRequest.of(page - 1, size);
         if(auth.getUserId() == userId) {
-            return cookieRepository.findCookieListByChannelId(channel.getId(), pageable, true);
+            return new Page<>(cookieRepository.findCookieListByChannelId(channel.getId(), pageable, true));
         } else {
-            return cookieRepository.findCookieListByChannelId(channel.getId(), pageable, false);
+            return new Page<>(cookieRepository.findCookieListByChannelId(channel.getId(), pageable, false));
         }
     }
 
@@ -113,8 +114,23 @@ public class CookieService {
         }
     }
 
-    public Page<List> searchKeyword(int page, int size, KeywordSearch keywordSearch) {
+    /**
+     * 키워드 검색 조회
+     * @param page
+     * @param size
+     * @return
+     */
+    public Response.Page<List> searchKeyword(int page, int size,
+        CookieSearch search) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return cookieRepository.searchCookieList(pageable, keywordSearch);
+        return new Response.Page<>(cookieRepository.searchCookieListByKeyword(pageable, search));
+    }
+
+    /**
+     * 무한 스크롤 방식
+     * @return
+     */
+    public Response.Slice<List> getCookieListByCategory(int size, LocalDateTime startDateTime, CookieSearch search) {
+        return cookieRepository.getSliceByCategoryId(size, startDateTime, search);
     }
 }

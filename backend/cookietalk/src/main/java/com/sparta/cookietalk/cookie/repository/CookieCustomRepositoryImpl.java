@@ -1,30 +1,28 @@
 package com.sparta.cookietalk.cookie.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.cookietalk.category.entity.QCategory;
 import com.sparta.cookietalk.category.entity.QCookieCategory;
 import com.sparta.cookietalk.channel.entity.QChannel;
+import com.sparta.cookietalk.common.dto.Response;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
-import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
-import com.sparta.cookietalk.cookie.dto.KeywordSearch;
+import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.QCookie;
 import com.sparta.cookietalk.upload.QUploadFile;
 import com.sparta.cookietalk.user.entity.QUser;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.sql.ast.tree.predicate.BooleanExpressionPredicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -73,8 +71,6 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
         QCookie cookie = QCookie.cookie;
         QChannel channel = QChannel.channel;
         QUploadFile thumbnail = new QUploadFile("thumbnailFile");
-        QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
-        QCategory category = QCategory.category;
 
         BooleanBuilder ex = new BooleanBuilder();
 
@@ -87,20 +83,14 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             select(Projections.constructor(CookieResponse.List.class,
                 user.id,
                 user.nickname,
-                channel.id,
-                category.id,
-                category.name,
                 cookie.id,
                 cookie.title,
-                cookie.description,
                 thumbnail.s3Url,
                 cookie.proccessStatus,
                 cookie.createdAt))
             .distinct()
             .from(channel)
             .join(channel.cookies, cookie)
-            .join(cookie.cookieCategories, cookieCategory)
-            .join(cookieCategory.category, category)
             .join(channel.user, user)
             .join(cookie.thumbnailFile, thumbnail)
             .where(channel.id.eq(channelId).and(ex))
@@ -120,7 +110,45 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
     }
 
     @Override
-    public Page<CookieResponse.List> searchCookieList(Pageable pageable, KeywordSearch search) {
+    public Page<CookieResponse.List> searchCookieListByKeyword(Pageable pageable, CookieSearch search) {
+        QUser user = QUser.user;
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+
+        List<CookieResponse.List> fetch = queryFactory.
+            select(Projections.constructor(CookieResponse.List.class,
+                user.id,
+                user.nickname,
+                cookie.id,
+                cookie.title,
+                thumbnail.s3Url,
+                cookie.proccessStatus,
+                cookie.createdAt))
+            .distinct()
+            .from(channel)
+            .join(channel.cookies, cookie)
+            .join(channel.user, user)
+            .join(cookie.thumbnailFile, thumbnail)
+            .where(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byKeyword(search.getKeyword())))
+            .orderBy(cookie.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        Long count = queryFactory.select(Wildcard.count)
+            .distinct()
+            .from(cookie)
+            .where(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byKeyword(search.getKeyword())))
+            .fetchOne();
+
+
+        return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
+    }
+
+    @Override
+    public Response.Slice<CookieResponse.List> getSliceByCategoryId(int size, LocalDateTime cursor,
+        CookieSearch search) {
         QUser user = QUser.user;
         QCookie cookie = QCookie.cookie;
         QChannel channel = QChannel.channel;
@@ -132,36 +160,30 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             select(Projections.constructor(CookieResponse.List.class,
                 user.id,
                 user.nickname,
-                channel.id,
-                category.id,
-                category.name,
                 cookie.id,
                 cookie.title,
-                cookie.description,
                 thumbnail.s3Url,
                 cookie.proccessStatus,
                 cookie.createdAt))
             .distinct()
-            .from(channel)
-            .join(channel.cookies, cookie)
+            .from(cookie)
             .join(cookie.cookieCategories, cookieCategory)
             .join(cookieCategory.category, category)
-            .join(channel.user, user)
             .join(cookie.thumbnailFile, thumbnail)
-            .where(byKeyword(search.getKeyword()).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS)))
+            .join(cookie.channel, channel)
+            .join(channel.user, user)
+            .where(cookie.createdAt.gt(cursor).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byCategory(search.getCategoryId()))))
             .orderBy(cookie.createdAt.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
+            .limit(size + 1)
             .fetch();
 
-        Long count = queryFactory.select(Wildcard.count)
-            .distinct()
-            .from(cookie)
-            .where(byKeyword(search.getKeyword()).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS)))
-            .fetchOne();
+        boolean hasNextPage = false;
+        if(fetch.size() > size) {
+            hasNextPage = true;
+            fetch.remove(size);
+        }
 
-
-        return new PageImpl<>(fetch, pageable, count == null ? 0 : count);
+        return new Response.Slice<>(fetch, hasNextPage, fetch.size(), fetch.isEmpty() ? null : fetch.get(fetch.size() - 1).createdAt());
     }
 
     BooleanExpression byKeyword(String keyword) {
@@ -170,5 +192,12 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
         }
 
         return QCookie.cookie.title.containsIgnoreCase(keyword);
+    }
+
+    BooleanExpression byCategory(Long categoryId) {
+        if(categoryId == null) {
+            return null;
+        }
+        return QCategory.category.id.eq(categoryId);
     }
 }
