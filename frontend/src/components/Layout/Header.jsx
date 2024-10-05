@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import SearchInput from '../inputs/SearchInput.jsx';
 
 const Header = () => {
-  const { authenticatedUser } = useUserStore((state) => state);
+  const { authenticatedUser, user } = useUserStore((state) => state);
   const { mutate, isError, isPending } = useSignOut();
 
   useEffect(() => {
@@ -38,6 +38,7 @@ const Header = () => {
             >
               {isPending ? '처리중' : '로그아웃'}
             </button>
+            <Link to={`/channel/${user.nickname}`}>내 채널</Link>
           </>
         ) : (
           <>
