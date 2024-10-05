@@ -5,11 +5,8 @@ import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.enums.UploadType;
 import com.sparta.cookietalk.common.exceptions.FileUploadInProgressException;
 import com.sparta.cookietalk.common.utils.FileUtils;
-import com.sparta.cookietalk.upload.components.Converter;
 import com.sparta.cookietalk.user.entity.User;
 import java.io.File;
-import java.util.Optional;
-import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UploadService {
 
     private final FileUtils fileUtils;
-    private final FileUploader fileUploadAsync;
+    private final FileUploader fileUploader;
     private final AmazonS3Uploader s3Uploader;
     private final UploadFileRepository uploadFileRepository;
 
@@ -37,10 +34,35 @@ public class UploadService {
             .build();
 
         uploadFile = uploadFileRepository.saveAndFlush(uploadFile);
-        fileUploadAsync.uploadVideo(vod, uploadFile);
+        fileUploader.uploadVideo(vod, uploadFile);
         return uploadFile;
     }
 
+    /**
+     * 파일 비동기 업로드
+     * @param uploadType
+     * @param multipartFile
+     * @return
+     */
+    public UploadFile uploadFileAsync(UploadType uploadType, MultipartFile multipartFile) {
+        File file = fileUtils.saveTemp(uploadType, multipartFile);
+        UploadFile uploadFile = UploadFile.builder()
+            .uploadType(uploadType)
+            .status(UploadStatus.WAITING)
+            .build();
+
+        uploadFile = uploadFileRepository.saveAndFlush(uploadFile);
+        fileUploader.uploadFileAsync(uploadType, file, uploadFile);
+
+        return uploadFile;
+    }
+
+    /**
+     * 파일 업로드
+     * @param uploadType
+     * @param multipartFile
+     * @return
+     */
     public UploadFile uploadFile(UploadType uploadType, MultipartFile multipartFile) {
         File file = fileUtils.saveTemp(uploadType, multipartFile);
         UploadFile uploadFile = UploadFile.builder()
@@ -49,7 +71,7 @@ public class UploadService {
             .build();
 
         uploadFile = uploadFileRepository.saveAndFlush(uploadFile);
-        fileUploadAsync.uploadFile(uploadType, file, uploadFile);
+        fileUploader.uploadFile(uploadType, file, uploadFile);
 
         return uploadFile;
     }

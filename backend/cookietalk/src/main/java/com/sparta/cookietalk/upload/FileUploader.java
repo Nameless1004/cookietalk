@@ -49,6 +49,17 @@ public class FileUploader {
     }
 
     @Async
+    public void uploadFileAsync(UploadType uploadType, File file, UploadFile uploadFile) {
+        S3UploadResponseDto response = s3Uploader.uploadToS3(uploadType.getKey(), file).orElse(null);
+
+        deleteFileIfExists(file);
+        if(!validateResult(uploadFile, response)) {
+            return;
+        }
+
+        setUploadCompleteAndSave(uploadFile, response);
+    }
+
     public void uploadFile(UploadType uploadType, File file, UploadFile uploadFile) {
         S3UploadResponseDto response = s3Uploader.uploadToS3(uploadType.getKey(), file).orElse(null);
 
