@@ -62,8 +62,8 @@ public class CookieCreateFacade {
         }
 
         UploadFile uploadedVideo = uploadService.uploadVideo(video);
-        UploadFile uploadedThumbnail = uploadService.uploadFile(UploadType.IMAGE, thumbnail);
-        UploadFile uploadedAttachment = attachment == null ? null : uploadService.uploadFile(UploadType.ATTACHMENT, attachment);
+        UploadFile uploadedThumbnail = uploadService.uploadFileAsync(UploadType.IMAGE, thumbnail);
+        UploadFile uploadedAttachment = attachment == null ? null : uploadService.uploadFileAsync(UploadType.ATTACHMENT, attachment);
 
         Cookie newCookie = createNewCookie(createDto, channel, uploadedVideo, uploadedThumbnail,
             uploadedAttachment);

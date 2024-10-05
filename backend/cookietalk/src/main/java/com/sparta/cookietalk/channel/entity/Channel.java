@@ -1,9 +1,13 @@
 package com.sparta.cookietalk.channel.entity;
 
+import com.sparta.cookietalk.amazon.S3UploadResponseDto;
+import com.sparta.cookietalk.channel.dto.ChannelRequest;
+import com.sparta.cookietalk.channel.dto.ChannelRequest.Update;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.series.entity.Series;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.user.entity.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +36,9 @@ public class Channel {
     @JoinColumn(name = "upload_id")
     private UploadFile profileImage;
 
+    private String githubUrl;
+    private String blogUrl;
+    private String businessEmail;
     private String description;
 
     @OneToMany(mappedBy = "channel")
@@ -43,5 +50,16 @@ public class Channel {
     public Channel(User user) {
         this.user = user;
         user.registChannel(this);
+    }
+
+    public void registProfileImage(UploadFile uploadFile) {
+        this.profileImage = uploadFile;
+    }
+
+    public void updateProfile(ChannelRequest.Update request) {
+        this.description = request.description();
+        this.blogUrl = request.blogUrl();
+        this.githubUrl = request.githubUrl();
+        this.businessEmail = request.businessEmail();
     }
 }
