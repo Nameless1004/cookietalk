@@ -18,8 +18,8 @@ export const useSignIn = () => {
   const { mutate, isPending, error, isError, isSuccess } = useMutation({
     mutationFn: postSignIn,
     onSuccess: (data) => {
-      const { username, nickname, accessToken } = data;
-      signIn({ username, nickname, accessToken });
+      const { id, userId, nickname, accessToken, refreshToken } = data;
+      signIn({ id, userId, nickname, accessToken, refreshToken });
     },
     onError: (error) => {
       console.log('Sign In Error: ', error);
