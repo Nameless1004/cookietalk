@@ -30,7 +30,7 @@ public class ChannelController {
         return ResponseDto.toEntity(HttpStatus.OK, channelService.getChannelProfile(userId));
     }
 
-    @PatchMapping("/api/v1/channels}")
+    @PatchMapping("/api/v1/channels")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> updateChannel(
         @RequestPart("profile") MultipartFile profile,
         @RequestBody ChannelRequest.Update request,
