@@ -25,7 +25,7 @@ export const postSignOut = async (accessToken) => {
       {},
       {
         headers: {
-          Authorization: { accessToken },
+          Authorization: accessToken,
         },
       },
     );
