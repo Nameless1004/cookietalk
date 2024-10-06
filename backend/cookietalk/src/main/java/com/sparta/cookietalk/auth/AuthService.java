@@ -152,14 +152,15 @@ public class AuthService {
 
         // TTL 새로해서
         String userIdToString = String.valueOf(userId);
-        Long ttl = redisTemplate.getExpire(userIdToString);
-        redisTemplate.opsForValue().set(Define.REDIS_REFRESH_TOKEN_KEY_PREFIX + userIdToString, newAccessToken);
+        Long ttl = redisTemplate.getExpire(Define.REDIS_REFRESH_TOKEN_KEY_PREFIX + userIdToString, TimeUnit.MILLISECONDS);
 
-        if(ttl != null && ttl > 0) {
-            redisTemplate.expire(userIdToString, ttl, TimeUnit.MILLISECONDS);
-        } else {
+        if(ttl == null || ttl < 0) {
             return ResponseDto.of(HttpStatus.UNAUTHORIZED, "만료된 리프레쉬 토큰입니다.", null);
         }
+
+        redisTemplate.opsForValue().set(Define.REDIS_REFRESH_TOKEN_KEY_PREFIX + userIdToString, newRefreshToken, ttl, TimeUnit.MILLISECONDS);
+
+
 
         AuthResponse.Reissue reissue = new AuthResponse.Reissue(newAccessToken, newRefreshToken);
 
