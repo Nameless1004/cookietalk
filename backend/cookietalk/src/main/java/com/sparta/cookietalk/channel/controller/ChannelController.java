@@ -1,6 +1,7 @@
 package com.sparta.cookietalk.channel.controller;
 
 import com.sparta.cookietalk.channel.dto.ChannelRequest;
+import com.sparta.cookietalk.channel.dto.ChannelRequest.Update;
 import com.sparta.cookietalk.channel.dto.ChannelResponse;
 import com.sparta.cookietalk.channel.service.ChannelService;
 import com.sparta.cookietalk.common.dto.ResponseDto;
@@ -33,9 +34,12 @@ public class ChannelController {
     @PatchMapping("/api/v1/channels")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> updateChannel(
         @RequestPart("profile") MultipartFile profile,
-        @RequestBody ChannelRequest.Update request,
+        @RequestPart("description") String description,
+        @RequestPart("businessEmail") String businessEmail,
+        @RequestPart("blogUrl") String blogUrl,
+        @RequestPart("githubUrl") String githubUrl,
         @AuthenticationPrincipal AuthUser authUser) {
 
-        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(profile, request, authUser));
+        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(profile, new Update(description, businessEmail, blogUrl, githubUrl), authUser));
     }
 }
