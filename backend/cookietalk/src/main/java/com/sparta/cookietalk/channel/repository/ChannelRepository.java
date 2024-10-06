@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ChannelRepository extends JpaRepository<Channel, Long> {
-    @Query("SELECT c FROM Channel c JOIN FETCH c.user JOIN FETCH c.profileImage WHERE c.user.id = :id")
+    // 여기 profileImage 문제 같음
+    @Query("SELECT c FROM Channel c JOIN FETCH c.user WHERE c.user.id = :id")
     Optional<Channel> findChannelWithUserByUserId(@Param("id")Long userId);
 
     @Query("SELECT c FROM Channel c JOIN FETCH c.user WHERE c.id = :id")

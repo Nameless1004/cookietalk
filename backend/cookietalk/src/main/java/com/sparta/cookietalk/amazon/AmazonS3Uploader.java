@@ -156,7 +156,7 @@ public class AmazonS3Uploader {
 
     public Optional<S3UploadResponseDto> uploadMultipartFileToS3(String prefixKey, MultipartFile file) {
         try{
-            String key = prefixKey + "/" + file.getName();
+            String key = prefixKey + "/" + file.getOriginalFilename();
             PutObjectRequest req = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
