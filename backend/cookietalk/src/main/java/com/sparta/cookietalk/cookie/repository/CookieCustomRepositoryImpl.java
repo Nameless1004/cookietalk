@@ -110,9 +110,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .fetchOne();
 
 
-        count = count == null ? 0 : count;
-        double ceil = Math.ceil(count.floatValue() / (float) pageable.getPageSize());
-        return new Response.Page<>(fetch, pageable.getPageNumber(), pageable.getPageSize(), count, (int) ceil);
+        return Response.Page.of(fetch, count,pageable);
     }
 
     @Override
@@ -148,9 +146,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .where(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byKeyword(search.getKeyword())))
             .fetchOne();
 
-        count = count == null ? 0 : count;
-        double ceil = Math.ceil(count.floatValue() / (float) pageable.getPageSize());
-        return new Response.Page<>(fetch, pageable.getPageNumber(), pageable.getPageSize(), count, (int) ceil);
+        return Response.Page.of(fetch, count,pageable);
     }
 
     @Override
@@ -162,6 +158,11 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
         QUploadFile thumbnail = new QUploadFile("thumbnailFile");
         QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
         QCategory category = QCategory.category;
+
+        BooleanBuilder cursorBooleanBuilder = new BooleanBuilder();
+        if(cursor != null) {
+            cursorBooleanBuilder.and(cookie.createdAt.lt(cursor));
+        }
 
         List<CookieResponse.List> fetch = queryFactory.
             select(Projections.constructor(CookieResponse.List.class,
@@ -179,7 +180,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .join(cookie.thumbnailFile, thumbnail)
             .join(cookie.channel, channel)
             .join(channel.user, user)
-            .where(cookie.createdAt.lt(cursor).and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byCategory(search.getCategoryId()))))
+            .where(cursorBooleanBuilder.and(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(byCategory(search.getCategoryId()))))
             .orderBy(cookie.createdAt.desc())
             .limit(size + 1)
             .fetch();

@@ -4,6 +4,7 @@ import com.sparta.cookietalk.common.dto.Response.Page;
 import com.sparta.cookietalk.common.dto.Response.Slice;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public sealed interface Response permits Page, Slice {
     record Page<T>(
@@ -13,8 +14,10 @@ public sealed interface Response permits Page, Slice {
         long totalElements,
         int totalPages
     ) implements Response {
-        public Page(org.springframework.data.domain.Page<T> page) {
-           this(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
+        public static <T>Page<T> of(List<T> contents, Long count, Pageable pageable) {
+            count = count == null ? 0 : count;
+            double ceil = Math.ceil(count.floatValue() / (float) pageable.getPageSize());
+           return new Page<>(contents, pageable.getPageNumber() + 1, pageable.getPageSize(), count, (int) ceil);
         }
     }
 

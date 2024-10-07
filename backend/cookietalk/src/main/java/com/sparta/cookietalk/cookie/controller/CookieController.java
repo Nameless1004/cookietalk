@@ -74,7 +74,7 @@ public class CookieController {
     public ResponseEntity<ResponseDto<Response.Slice<List>>> getCookiesByCategoryId(
         @PathVariable("categoryId") Long categoryId,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam LocalDateTime startDateTime) {
+        @RequestParam(required = false) LocalDateTime startDateTime) {
 
         Response.Slice<List> slice = cookieService.getCookieListByCategory(size, startDateTime, CookieSearch.builder()
                 .categoryId(categoryId)
