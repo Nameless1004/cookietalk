@@ -2,11 +2,12 @@ package com.sparta.cookietalk.cookie.entity;
 
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.category.entity.CookieCategory;
+import com.sparta.cookietalk.comment.entity.Comment;
 import com.sparta.cookietalk.common.entity.Timestamped;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
-import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.series.entity.SeriesCookie;
 import com.sparta.cookietalk.upload.UploadFile;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -66,6 +67,10 @@ public class Cookie extends Timestamped {
 
     @Column(nullable = false)
     private Long cookieViews;
+
+
+    @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     /**
      * 비디오 등록

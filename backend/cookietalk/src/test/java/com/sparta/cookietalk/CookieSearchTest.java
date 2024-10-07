@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,12 +43,14 @@ public class CookieSearchTest {
     @Autowired
     private UploadFileRepository uploadFileRepository;
 
+    @Autowired
+    private PasswordEncoder encoder;
     @Test
     @Transactional
     @Rollback(false)
     public void createCookie() throws Exception {
         // given
-        User user = new User("username", "password", "email", "nickname", UserRole.ROLE_USER);
+        User user = new User("username", encoder.encode("password"), "email", "nickname", UserRole.ROLE_USER);
         user = userRepository.saveAndFlush(user);
         Category category = new Category("개발");
         category = categoryRepository.saveAndFlush(category);
