@@ -1,6 +1,7 @@
 package com.sparta.cookietalk.user.entity;
 
 import com.sparta.cookietalk.channel.entity.Channel;
+import com.sparta.cookietalk.comment.entity.Comment;
 import com.sparta.cookietalk.common.enums.UserRole;
 import com.sparta.cookietalk.user.UserEventListener;
 import jakarta.persistence.Column;
@@ -12,7 +13,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,6 +49,9 @@ public class User {
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private Channel channel;
+
+    @OneToMany(mappedBy = "authUser")
+    private List<Comment> comments = new ArrayList<>();
 
     public User(String username, String password, String email,String nickname,
         UserRole role) {
