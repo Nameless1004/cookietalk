@@ -62,14 +62,14 @@ public class AuthService {
 
         // email 중복확인
         String email = request.email();
-        Optional<User> checkEmail = userRepository.findByEmail(email);
+        Optional<User> checkEmail = userRepository.findWithChannelByEmail(email);
         if (checkEmail.isPresent()) {
             throw new InvalidRequestException("중복된 Email 입니다.");
         }
 
         // nickname 중복확인
         String nickname = request.nickname();
-        Optional<User> checkNickname = userRepository.findByNickname(nickname);
+        Optional<User> checkNickname = userRepository.findWithChannelByNickname(nickname);
         if (checkNickname.isPresent()) {
             throw new InvalidRequestException("중복된 닉네임 입니다.");
         }
@@ -87,7 +87,7 @@ public class AuthService {
      * @return
      */
     public ResponseDto<AuthResponse.Signin> signin(AuthRequest.Signin request) {
-        User user = userRepository.findByUsername(request.username()).orElseThrow(()-> new InvalidRequestException("아이디 또는 비밀번호가 잘못되었습니다."));
+        User user = userRepository.findWithChannelByUsername(request.username()).orElseThrow(()-> new InvalidRequestException("아이디 또는 비밀번호가 잘못되었습니다."));
 
         if(!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new InvalidRequestException("아이디 또는 비밀번호가 잘못되었습니다.");

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UploadException.class)
     public ResponseEntity<ResponseDto<Void>> handleUploadException(UploadException ex) {
         return ResponseDto.toEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler({AccessDeniedException.class})
+    public ResponseEntity<ResponseDto<Void>> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseDto.toEntity(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", null);
     }
 
     @ExceptionHandler({AuthException.class})
