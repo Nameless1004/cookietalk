@@ -76,13 +76,13 @@ public class ChannelService {
 
         channel.updateProfile(request);
         channel = channelRepository.save(channel);
-
+        String profileUrl = channel.getProfileImage() == null ? null : channel.getProfileImage().getS3Url();
         return ChannelResponse.Profile.builder()
             .channelId(channel.getId())
             .userId(channel.getUser().getId())
             .nickname(channel.getUser().getNickname())
             .description(channel.getDescription())
-            .profileImageUrl(channel.getProfileImage().getS3Url())
+            .profileImageUrl(profileUrl)
             .blogUrl(channel.getBlogUrl())
             .githubUrl(channel.getGithubUrl())
             .businessEmail(channel.getBusinessEmail())
