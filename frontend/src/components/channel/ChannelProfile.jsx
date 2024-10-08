@@ -3,29 +3,68 @@ import { useEffect, useState } from 'react';
 import ImageInput from '../inputs/ImageInput.jsx';
 import FormInput from '../inputs/FormInput.jsx';
 import Button from '../inputs/Button.jsx';
+import { usePatchChannelProfile } from '../../query/channelQuery.js';
 
 const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
   const [editMode, setEditMode] = useState(false);
-  const [profileInput, setProfileInput] = useState(null);
+  const [profileInput, setProfileInput] = useState({
+    channelId: null,
+    userId: null,
+    nickname: null,
+    description: null,
+    githubUrl: null,
+    blogUrl: null,
+    businessEmail: null,
+    profileImg: null,
+  });
+
   const setProfileImg = (value) => {
     setProfileInput({ ...profileInput, profileImg: value });
   };
 
   useEffect(() => {
-    setProfileInput({ ...profile });
+    setProfileInput({ ...profile, profileImg: null });
   }, [isPending]);
+
+  const {
+    mutate: mutateProfile,
+    isPending: mutateProfileIsPending,
+    error,
+    isError,
+    isSuccess,
+  } = usePatchChannelProfile();
+
+  useEffect(() => {
+    if (isSuccess) {
+      alert('프로필 수정 성공!');
+    }
+
+    if (isError) {
+      alert(`프로필 업데이트 에러: ${error}`);
+    }
+  }, [isSuccess, isError]);
 
   const handleToggleEditMode = () => {
     setEditMode(!editMode);
   };
 
+  const handleProfileSubmit = (e) => {
+    e.preventDefault();
+    console.log(profileInput);
+
+    mutateProfile(profileInput);
+  };
+
   return editMode ? (
-    <form className='grid grid-cols-[1fr_4fr] gap-10 items-center w-full h-[250px] -bg--light-gray-1 p-10'>
+    <form
+      onSubmit={handleProfileSubmit}
+      className='grid grid-cols-[1fr_4fr] gap-10 items-center w-full h-[250px] -bg--light-gray-1 p-10'
+    >
       <ImageInput
         value={profileInput.profileImg}
         setValue={setProfileImg}
         originUrl={profile.profileImageUrl}
-        buttonLabel='이미지 추가하기'
+        buttonLabel='이미지 선택'
       />
       <div className='flex flex-col gap-3 h-full'>
         <FormInput
@@ -65,6 +104,7 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
           placeholder='채널 소개를 작성해주세요'
         />
         <Button
+          type='submit'
           styleType='primary'
           sizeType='full'
         >
