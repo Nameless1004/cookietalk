@@ -61,6 +61,7 @@ public class SeriesService {
         seriesRepository.delete(series);
     }
 
+    @Transactional(readOnly = true)
     public List<SeriesResponse.List> getUserSeriesById(Long userId) {
         User user = userRepository.findByIdOrElseThrow(userId);
         List<Series> result = seriesRepository.findAllByUser(user);

@@ -26,17 +26,18 @@ public class ChannelController {
 
     @GetMapping("/api/v1/users/{userId}/channels/profile")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> getChannelProfile(
-        @PathVariable("userId") Long userId
+        @PathVariable("userId") long userId
     ) {
         return ResponseDto.toEntity(HttpStatus.OK, channelService.getChannelProfile(userId));
     }
 
-    @PatchMapping("/api/v1/channels")
+    @PatchMapping("/api/v1/users/{userId}/channels/profile")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> updateChannel(
+        @PathVariable("userId") long userId,
         @RequestPart("profile") MultipartFile profile,
         @RequestPart("update") Update update,
         @AuthenticationPrincipal AuthUser authUser) {
 
-        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(profile, update, authUser));
+        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(userId, profile, update, authUser));
     }
 }

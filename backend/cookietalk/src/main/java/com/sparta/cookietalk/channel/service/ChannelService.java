@@ -48,11 +48,11 @@ public class ChannelService {
             .build();
     }
 
-    public ChannelResponse.Profile updateProfile(MultipartFile profile, Update request, AuthUser authUser) {
+    public ChannelResponse.Profile updateProfile(long userId, MultipartFile profile, Update request, AuthUser authUser) {
         Channel channel = channelRepository.findChannelWithUserByUserId(authUser.getUserId())
-            .orElseThrow(() -> new InvalidRequestException("존재하지 않는 유저입니다."));
+            .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
 
-        if(authUser.getUserId() != channel.getUser().getId()) {
+        if(authUser.getUserId() != userId || authUser.getUserId() != channel.getUser().getId()) {
             throw new AuthException("수정 권한이 없습니다.");
         }
 

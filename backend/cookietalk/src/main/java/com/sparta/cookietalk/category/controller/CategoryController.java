@@ -28,7 +28,7 @@ public class CategoryController {
     @Secured({ Authority.ADMIN })
     @GetMapping("/api/v1/categories")
     public ResponseEntity<ResponseDto<List<CategoryResponse.List>>> getAllCategories(){
-        return ResponseDto.toEntity(HttpStatus.OK, categoryService.getAllCategory());
+        return ResponseDto.toEntity(HttpStatus.CREATED, categoryService.getAllCategory());
     }
 
     @Secured({ Authority.ADMIN })

@@ -113,6 +113,7 @@ public class CookieService {
 
     }
 
+    @Transactional(readOnly = true)
     public Response.Page<CookieResponse.List> getCookieListByUserId(AuthUser auth, Long userId, int page, int size) {
         Channel channel = channelRepository.findChannelWithUserByUserId(userId)
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 채널입니다."));
