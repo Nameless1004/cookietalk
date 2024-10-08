@@ -18,6 +18,7 @@ import com.sparta.cookietalk.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -54,6 +55,12 @@ public class ChannelService {
 
         if(authUser.getUserId() != userId || authUser.getUserId() != channel.getUser().getId()) {
             throw new AuthException("수정 권한이 없습니다.");
+        }
+
+        if(profile == null) {
+            if(channel.getProfileImage() != null && StringUtils.hasText(channel.getProfileImage().getS3Url())) {
+                s3Uploader.deleteFile(UploadType.IMAGE, channel.getProfileImage().getS3Key());
+            }
         }
 
         if(profile != null){
