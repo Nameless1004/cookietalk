@@ -12,24 +12,15 @@ export const getChannelProfile = async (userId) => {
 export const patchChannelProfile = async (updatedProfile) => {
   const { userId } = updatedProfile;
 
-  console.log('patchChannelProfile ~ updatedProfile: ', updatedProfile);
+  console.log('patchChannelProfile ~ updatedProfile: S', updatedProfile);
 
   const formData = new FormData();
-  formData.append(
-    'update',
-    new Blob([
-      JSON.stringify({
-        channelId: updatedProfile.channelId,
-        userId: updatedProfile.userId,
-        nickname: updatedProfile.nickname,
-        description: updatedProfile.description,
-        githubUrl: updatedProfile.githubUrl,
-        blogUrl: updatedProfile.blogUrl,
-        businessEmail: updatedProfile.businessEmail,
-      }),
-    ]),
-  );
 
+  formData.append('nickname', updatedProfile.nickname);
+  formData.append('description', updatedProfile.description);
+  formData.append('githubUrl', updatedProfile.githubUrl);
+  formData.append('blogUrl', updatedProfile.blogUrl);
+  formData.append('businessEmail', updatedProfile.businessEmail);
   formData.append('profile', updatedProfile.profileImg);
 
   try {
