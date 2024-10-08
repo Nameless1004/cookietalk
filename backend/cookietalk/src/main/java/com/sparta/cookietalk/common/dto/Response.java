@@ -27,5 +27,4 @@ public sealed interface Response permits Page, Slice {
         int size,
         LocalDateTime nextCursor
     ) implements Response{ }
-
 }

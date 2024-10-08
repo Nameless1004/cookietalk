@@ -13,16 +13,13 @@ import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.QCookie;
+import com.sparta.cookietalk.cookie.entity.QUserRecentCookie;
 import com.sparta.cookietalk.upload.QUploadFile;
 import com.sparta.cookietalk.user.entity.QUser;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -67,6 +64,33 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .where(cookie.id.eq(id))
             .fetchOne();
         return c;
+    }
+
+    @Override
+    public List<CookieResponse.RecentList> getRecentCookies(List<Long> list) {
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUser user = QUser.user;
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+        QUserRecentCookie userRecentCookie = QUserRecentCookie.userRecentCookie;
+
+        return queryFactory
+            .select(Projections.constructor(CookieResponse.RecentList.class,
+                user.id,
+                user.nickname,
+                cookie.id,
+                cookie.title,
+                thumbnail.s3Url,
+                userRecentCookie.viewAt))
+            .from(userRecentCookie)
+            .innerJoin(userRecentCookie.cookie, cookie)
+            .innerJoin(cookie.channel, channel)
+            .innerJoin(channel.user, user)
+            .leftJoin(cookie.thumbnailFile, thumbnail)
+            // 서브쿼리에서 cookie_id를 명확히 지정
+            .where(cookie.id.in(list))
+            .orderBy(userRecentCookie.viewAt.desc())
+            .fetch();
     }
 
     @Override
@@ -193,6 +217,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
 
         return new Response.Slice<>(fetch, hasNextPage, fetch.size(), fetch.isEmpty() ? null : fetch.get(fetch.size() - 1).createdAt());
     }
+
 
     BooleanExpression byKeyword(String keyword) {
         if(!StringUtils.hasText(keyword)) {
