@@ -18,7 +18,7 @@ const FormInput = ({
       <input
         name={name}
         type={type ?? 'text'}
-        value={formValue.name}
+        value={formValue[name] ?? undefined}
         onChange={handleFormChange}
         className={`border rounded ${className}`}
         {...props}
