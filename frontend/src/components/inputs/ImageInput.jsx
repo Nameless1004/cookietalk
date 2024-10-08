@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Button from './Button.jsx';
+import { X } from 'lucide-react';
 
 const urlToFile = async (url) => {
   if (!url) return null;
   const response = await fetch(url);
   const blob = await response.blob();
-  return new File([blob], 'thumbnail', { type: blob.type });
+  return new File([blob], 'image', { type: blob.type });
 };
 
 const ImageInput = ({ value, setValue, originUrl, buttonLabel }) => {
@@ -19,6 +20,11 @@ const ImageInput = ({ value, setValue, originUrl, buttonLabel }) => {
     const file = e.target.files[0];
     setValue(file);
     createPreviewUrl(file);
+  };
+
+  const handleRemoveImg = () => {
+    setPreviewUrl(null);
+    setValue(null);
   };
 
   const createPreviewUrl = (file) => {
@@ -71,7 +77,15 @@ const ImageInput = ({ value, setValue, originUrl, buttonLabel }) => {
           onChange={handleImgInput}
         />
       </Button>
-      <span>{value?.name}</span>
+      <div className='flex justify-center items-center gap-1'>
+        <span className='text-[16px] leading-[16px]'>{value?.name}</span>
+        <span
+          className='items-center hover:-bg--light-gray-0 hover:cursor-pointer'
+          onClick={handleRemoveImg}
+        >
+          <X size='18px' />
+        </span>
+      </div>
     </div>
   );
 };

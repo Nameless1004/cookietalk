@@ -12,15 +12,15 @@ export const getChannelProfile = async (userId) => {
 export const patchChannelProfile = async (updatedProfile) => {
   const { userId } = updatedProfile;
 
-  console.log('patchChannelProfile ~ updatedProfile: S', updatedProfile);
+  console.log('patchChannelProfile ~ updatedProfile: ', updatedProfile);
 
   const formData = new FormData();
 
-  formData.append('nickname', updatedProfile.nickname);
-  formData.append('description', updatedProfile.description);
-  formData.append('githubUrl', updatedProfile.githubUrl);
-  formData.append('blogUrl', updatedProfile.blogUrl);
-  formData.append('businessEmail', updatedProfile.businessEmail);
+  formData.append('nickname', updatedProfile.nickname ?? '');
+  formData.append('description', updatedProfile.description ?? '');
+  formData.append('githubUrl', updatedProfile.githubUrl ?? '');
+  formData.append('blogUrl', updatedProfile.blogUrl ?? '');
+  formData.append('businessEmail', updatedProfile.businessEmail ?? '');
   formData.append('profile', updatedProfile.profileImg);
 
   try {

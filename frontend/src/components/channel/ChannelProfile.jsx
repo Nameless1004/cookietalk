@@ -50,9 +50,9 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
 
   const handleProfileSubmit = (e) => {
     e.preventDefault();
-    console.log(profileInput);
 
     mutateProfile(profileInput);
+    setEditMode(false);
   };
 
   return editMode ? (
@@ -72,35 +72,35 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
           name='nickname'
           formValue={profileInput}
           setFormValue={setProfileInput}
-          label='닉네임'
+          label='닉네임 *'
           placeholder='닉네임을 입력해주세요'
         />
         <FormInput
           name='blogUrl'
           formValue={profileInput}
           setFormValue={setProfileInput}
-          label='블로그 주소'
+          label='블로그 주소 *'
           placeholder='블로그 주소를 입력해주세요'
         />
         <FormInput
           name='businessEmail'
           formValue={profileInput}
           setFormValue={setProfileInput}
-          label='이메일 주소'
+          label='이메일 주소 *'
           placeholder='이메일 주소를 입력해주세요'
         />
         <FormInput
           name='githubUrl'
           formValue={profileInput}
           setFormValue={setProfileInput}
-          label='깃허브 주소'
+          label='깃허브 주소 *'
           placeholder='깃허브 주소를 입력해주세요'
         />
         <FormInput
           name='description'
           formValue={profileInput}
           setFormValue={setProfileInput}
-          label='채널 소개'
+          label='채널 소개 *'
           placeholder='채널 소개를 작성해주세요'
         />
         <Button
