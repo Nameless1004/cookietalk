@@ -2,11 +2,12 @@ package com.sparta.cookietalk.cookie.entity;
 
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.category.entity.CookieCategory;
+import com.sparta.cookietalk.comment.entity.Comment;
 import com.sparta.cookietalk.common.entity.Timestamped;
-import com.sparta.cookietalk.common.enums.ProccessStatus;
-import com.sparta.cookietalk.series.entity.Series;
+import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.series.entity.SeriesCookie;
 import com.sparta.cookietalk.upload.UploadFile;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,13 +21,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -42,10 +42,10 @@ public class Cookie extends Timestamped {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private ProccessStatus proccessStatus;
+    private ProcessStatus proccessStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id")
+    @JoinColumn(name = "channel_id" , nullable = false)
     private Channel channel;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -61,10 +61,21 @@ public class Cookie extends Timestamped {
     private UploadFile attachmentFile; // zip 파일
 
     @OneToMany(mappedBy = "cookie")
-    private Set<CookieCategory> cookieCategories = new HashSet<>();
+    private List<CookieCategory> cookieCategories = new ArrayList<>();
 
     @OneToMany(mappedBy = "cookie")
     private List<SeriesCookie> seriesCookies = new ArrayList<>();
+
+    @Column(nullable = false)
+    private Long cookieViews;
+
+
+    @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @BatchSize(size = 10)
+    private List<UserRecentCookie> recentCookies = new ArrayList<>();
 
     /**
      * 비디오 등록
@@ -91,7 +102,7 @@ public class Cookie extends Timestamped {
     }
 
     @Builder
-    public Cookie(Channel channel, String title, String description, ProccessStatus status, UploadFile videoFile, UploadFile thumbnailFile, UploadFile attachmentFile) {
+    public Cookie(Channel channel, String title, String description, ProcessStatus status, UploadFile videoFile, UploadFile thumbnailFile, UploadFile attachmentFile) {
         this.channel = channel;
         this.title = title;
         this.description = description;
@@ -99,5 +110,14 @@ public class Cookie extends Timestamped {
         this.videoFile = videoFile;
         this.thumbnailFile = thumbnailFile;
         this.attachmentFile = attachmentFile;
+        this.cookieViews = 0L;
+    }
+
+    public void updateProcessStatus(ProcessStatus processStatus) {
+        this.proccessStatus = processStatus;
+    }
+
+    public void incrementView() {
+        this.cookieViews++;
     }
 }

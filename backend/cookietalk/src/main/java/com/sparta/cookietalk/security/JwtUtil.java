@@ -2,6 +2,7 @@ package com.sparta.cookietalk.security;
 
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.common.enums.UserRole;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -41,32 +42,6 @@ public class JwtUtil {
 
     private SecretKey key;
 
-
-    public String createToken(TokenType tokenType, String username, UserRole role) {
-        Date now = new Date();
-
-        if (tokenType == TokenType.ACCESS) {
-            return BEARER_PREFIX + Jwts.builder()
-                .expiration(new Date(now.getTime() + tokenType.getLifeTime()))
-                .claim("category", tokenType.name())
-                .claim("username", username)
-                .claim(AUTHORIZATION_KEY, role.getAuthority())
-                .issuedAt(now)
-                .signWith(key)
-                .compact();
-        } else {
-            return BEARER_PREFIX + Jwts.builder()
-                .expiration(new Date(now.getTime() + tokenType.getLifeTime()))
-                .claim("category", tokenType.name())
-                .claim("username", username)
-                .claim(AUTHORIZATION_KEY, role.getAuthority())
-                .issuedAt(now)
-                .signWith(key)
-                .compact();
-        }
-    }
-
-
     @PostConstruct
     private void init() {
         // 키 설정
@@ -78,14 +53,6 @@ public class JwtUtil {
             .replaceAll("\\+", "%20");
 
         response.addHeader(AUTHORIZATION_HEADER, token);
-    }
-
-    public String getAccessTokenFromRequestHeader(HttpServletRequest req) {
-        return req.getHeader(AUTHORIZATION_HEADER);
-    }
-
-    public String getRefreshTokenHeader(HttpServletRequest req) {
-        return req.getHeader(REFRESH_TOKEN_HEADER);
     }
 
     public boolean canSubstringToken(String token) {
@@ -104,11 +71,9 @@ public class JwtUtil {
         throw new NullPointerException("Not Found Token");
     }
 
-    public String getUsername(String token) {
-
+    public String getUserId(String token) {
         return getJwtParser().parseSignedClaims(token)
-            .getPayload()
-            .get("username", String.class);
+            .getPayload().getSubject();
     }
 
     public String getRole(String token) {
@@ -145,53 +110,40 @@ public class JwtUtil {
         response.addCookie(cookie);
     }
 
-    public Cookie createCookie(TokenType tokenType, String refreshToken) {
-        refreshToken = URLEncoder.encode(refreshToken, StandardCharsets.UTF_8)
-            .replaceAll("\\+", "%20");
-        Cookie cookie = new Cookie(tokenType.name(), refreshToken);
-        cookie.setMaxAge((int)tokenType.getLifeTime() / 1000);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        return cookie;
-    }
-
     public String getCategory(String token) {
         return getJwtParser().parseSignedClaims(token)
             .getPayload()
             .get("category", String.class);
     }
 
-    public void deleteCookie(HttpServletResponse response, String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null); // 쿠키의 값을 null로 설정
-        cookie.setMaxAge(0); // 만료 시간을 0으로 설정하여 쿠키 삭제
-        cookie.setPath("/"); // 경로를 설정 (쿠키가 설정된 경로와 일치해야 함)
-        response.addCookie(cookie); // 응답에 쿠키 추가
-    }
 
-    public String createAccessToken(String username, UserRole role, boolean includePrefix) {
+    public String createAccessToken(Long userId, String email, UserRole role) {
         Date now = new Date();
-
-        String prefix = includePrefix ? BEARER_PREFIX : "";
-        return prefix + Jwts.builder()
+        return BEARER_PREFIX + Jwts.builder()
             .claim("category", TokenType.ACCESS.name())
             .expiration(new Date(now.getTime() + TokenType.ACCESS.getLifeTime()))
-            .claim("username", username)
-            .claim(AUTHORIZATION_KEY, role.getAuthority())
+            .subject(String.valueOf(userId))
+            .claim("email", email)
+            .claim("userRole", role.getUserRole())
             .issuedAt(now)
             .signWith(key)
             .compact();
     }
 
-    public String createRefreshToken(String username, UserRole role, boolean includePrefix) {
+    public String createRefreshToken(Long userId, String email,  UserRole role) {
         Date now = new Date();
-        String prefix = includePrefix ? BEARER_PREFIX : "";
-        return prefix + Jwts.builder()
+        return BEARER_PREFIX + Jwts.builder()
             .claim("category", TokenType.REFRESH.name())
             .expiration(new Date(now.getTime() + TokenType.REFRESH.getLifeTime()))
-            .claim("username", username)
-            .claim(AUTHORIZATION_KEY, role.getAuthority())
+            .subject(String.valueOf(userId))
+            .claim("email", email)
+            .claim("userRole", role.getUserRole())
             .issuedAt(now)
             .signWith(key)
             .compact();
+    }
+
+    public Claims extractClaims(String token) {
+        return getJwtParser().parseSignedClaims(token).getPayload();
     }
 }

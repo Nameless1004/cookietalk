@@ -3,6 +3,8 @@ package com.sparta.cookietalk.kakao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.cookietalk.auth.dto.AuthResponse;
+import com.sparta.cookietalk.common.defines.Define;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.common.enums.UserRole;
 import com.sparta.cookietalk.security.JwtUtil;
@@ -10,8 +12,10 @@ import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
 import java.net.URI;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +33,10 @@ public class KakaoService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final JwtUtil jwtUtil;
 
-    public KakaoLoginResponseDto kakaoLogin(String code) throws JsonProcessingException {
+    public AuthResponse.KakaoLogin kakaoLogin(String code) throws JsonProcessingException {
         // 인가 코드로 액세스 토큰 요청
         String accessToken = getToken(code);
 
@@ -41,9 +46,10 @@ public class KakaoService {
         User kakaoUser = registerKakaoUserIfNeeded(kakaoUserInfoDto);
 
         // jwt 토큰 반환
-        String access = jwtUtil.createToken(TokenType.ACCESS, kakaoUser.getUsername(), kakaoUser.getRole());
-        String refresh = jwtUtil.createToken(TokenType.REFRESH, kakaoUser.getUsername(), kakaoUser.getRole());
-        return new KakaoLoginResponseDto(access, refresh);
+        String access = jwtUtil.createAccessToken(kakaoUser.getId(), kakaoUser.getEmail(), kakaoUser.getRole());
+        String refresh = jwtUtil.createRefreshToken(kakaoUser.getId(), kakaoUser.getEmail(), kakaoUser.getRole());
+        redisTemplate.opsForValue().set(Define.REDIS_REFRESH_TOKEN_KEY_PREFIX + kakaoUser.getId(), refresh, TokenType.REFRESH.getLifeTime(), TimeUnit.MILLISECONDS);
+        return new AuthResponse.KakaoLogin(access, refresh);
     }
 
     private User registerKakaoUserIfNeeded(KakaoUserInfoDto kakaoUserInfo) {
@@ -53,7 +59,7 @@ public class KakaoService {
         if(kakaoUser == null) {
             // 카카오 사용자 email 동일한 email 가진 회원이 있는지 확인
             String kakaoEmail = kakaoUserInfo.getEmail();
-            User sameEmailUser = userRepository.findByEmail(kakaoEmail).orElse(null);
+            User sameEmailUser = userRepository.findWithChannelByEmail(kakaoEmail).orElse(null);
             if(sameEmailUser != null) {
                 kakaoUser = sameEmailUser;
                 // 기존 회원정보에 카카오 id 추가
@@ -64,10 +70,10 @@ public class KakaoService {
                 String password = UUID.randomUUID().toString();
                 String encodedPassword = passwordEncoder.encode(password);
 
-                kakaoUser = new User(kakaoUserInfo.getNickname(), encodedPassword, kakaoEmail, getTempNickname(), UserRole.USER, kakaoId);
+                kakaoUser = new User(kakaoUserInfo.getNickname(), encodedPassword, kakaoEmail, getTempNickname(), UserRole.ROLE_USER, kakaoId);
             }
 
-            userRepository.save(kakaoUser);
+            kakaoUser = userRepository.save(kakaoUser);
         }
         return kakaoUser;
     }

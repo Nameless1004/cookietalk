@@ -36,7 +36,7 @@ const SignUp = () => {
       return;
     }
 
-    mutate(formValue);
+    mutate({ ...formValue, userRole: 'ROLE_USER' });
   };
 
   return (

@@ -1,5 +1,6 @@
 package com.sparta.cookietalk.upload;
 
+import com.sparta.cookietalk.amazon.S3UploadResponseDto;
 import com.sparta.cookietalk.common.entity.Timestamped;
 import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.enums.UploadType;
@@ -49,4 +50,10 @@ public class UploadFile extends Timestamped {
     public void updateStatus(UploadStatus uploadStatus) {
         this.status = uploadStatus;
     }
+
+    public void updateS3(S3UploadResponseDto res) {
+        this.s3Key = res.getS3Key();
+        this.s3Url = res.getS3Url();
+    }
+
 }
