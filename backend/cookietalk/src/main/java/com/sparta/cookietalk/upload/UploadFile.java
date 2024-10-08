@@ -55,4 +55,5 @@ public class UploadFile extends Timestamped {
         this.s3Key = res.getS3Key();
         this.s3Url = res.getS3Url();
     }
+
 }

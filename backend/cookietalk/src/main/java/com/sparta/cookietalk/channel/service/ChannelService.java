@@ -60,6 +60,9 @@ public class ChannelService {
         if(profile == null) {
             if(channel.getProfileImage() != null && StringUtils.hasText(channel.getProfileImage().getS3Url())) {
                 s3Uploader.deleteFile(UploadType.IMAGE, channel.getProfileImage().getS3Key());
+                UploadFile profileImage = channel.getProfileImage();
+                uploadFileRepository.delete(profileImage);
+                channel.registProfileImage(null);
             }
         }
 
