@@ -5,6 +5,7 @@ import FormInput from '../inputs/FormInput.jsx';
 import Button from '../inputs/Button.jsx';
 import { usePatchChannelProfile } from '../../query/channelQuery.js';
 import { channelProfileValidate } from '../../utilities/validate.js';
+import { handleClipboard } from '../../utilities/clipboard.js';
 
 const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
   const [editMode, setEditMode] = useState(false);
@@ -61,6 +62,8 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
     mutateProfile(profileInput);
     setEditMode(false);
   };
+
+  const { handleCopyClipboard } = handleClipboard();
 
   return editMode ? (
     <form
@@ -148,13 +151,29 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
         </div>
         <div>{profile?.description ?? '소개글이 없습니다.'}</div>
         <div className='flex items-center gap-3'>
-          <button aria-label='User Github Link'>
+          <button
+            aria-label='User Github Link'
+            onClick={() => {
+              handleCopyClipboard(profile.githubUrl, '깃허브 주소가 클립보드에 복사됐습니다.');
+            }}
+          >
             <Github strokeWidth='1.5px' />
           </button>
-          <button aria-label='Copy User Mail'>
+          <button
+            aria-label='Copy User Mail'
+            onClick={() => {
+              handleCopyClipboard(profile.businessEmail, '이메일 주소가 클립보드에 복사됐습니다.');
+            }}
+          >
             <Mail strokeWidth='1.5px' />
           </button>
-          <button aria-label='Support User'>
+          <button
+            aria-label='Support U
+            ser'
+            onClick={() => {
+              alert('후원 기능은 준비중입니다.');
+            }}
+          >
             <Coffee strokeWidth='1.5px' />
           </button>
           {isMyChannel ? (
