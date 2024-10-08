@@ -31,13 +31,16 @@ public class ChannelController {
         return ResponseDto.toEntity(HttpStatus.OK, channelService.getChannelProfile(userId));
     }
 
-    @PatchMapping("/api/v1/users/{userId}/channels/profile")
+    @PatchMapping(value = "/api/v1/users/{userId}/channels/profile")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> updateChannel(
         @PathVariable("userId") long userId,
         @RequestPart(required = false, name = "profile") MultipartFile profile,
-        @RequestPart("update") Update update,
+        @RequestPart("description") String description,
+        @RequestPart("businessEmail") String businessEmail,
+        @RequestPart("githubUrl") String githubUrl,
+        @RequestPart("blogUrl") String blogUrl,
         @AuthenticationPrincipal AuthUser authUser) {
 
-        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(userId, profile, update, authUser));
+        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(userId, profile, new Update(description, businessEmail, blogUrl, githubUrl), authUser));
     }
 }
