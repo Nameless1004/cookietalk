@@ -2,24 +2,36 @@ package com.sparta.cookietalk.cookie.service;
 
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.channel.repository.ChannelRepository;
+import com.sparta.cookietalk.common.defines.Define;
 import com.sparta.cookietalk.common.dto.Response;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.common.enums.UploadStatus;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
-import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.Cookie;
+import com.sparta.cookietalk.cookie.entity.UserRecentCookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
+import com.sparta.cookietalk.cookie.repository.UserRecentCookieRepository;
 import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.upload.UploadFile;
+import com.sparta.cookietalk.user.entity.User;
+import com.sparta.cookietalk.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,11 +43,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class CookieService {
 
     private final CookieRepository cookieRepository;
-
-
     private final ChannelRepository channelRepository;
-
     private final CookieCreateFacade cookieCreateFacade;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final UserRecentCookieRepository userRecentCookieRepository;
+    private final UserRepository userRepository;
 
     /**
      * 쿠키 생성
@@ -55,18 +67,50 @@ public class CookieService {
 
     /**
      * 쿠키 상세 조회
+     *
+     * @param authUser
      * @param cookieId
      * @return
      */
-    public CookieResponse.Detail getCookie(Long cookieId) {
+    public CookieResponse.Detail getCookie(AuthUser authUser, Long cookieId) {
         Cookie cookie = cookieRepository.findById(cookieId)
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 쿠키입니다."));
-
+        
+        User user = userRepository.findByIdOrElseThrow(authUser.getUserId());
+        
         // 조회 수 증가
         cookie.incrementView();
+
+        // 시청 기록 저장
+        saveRecentCookiesToDB(user, cookie);
+
         cookieRepository.save(cookie);
 
         return cookieRepository.getCookieDetails(cookie.getId());
+    }
+
+    /**
+     * 레디스와 MySQL에 시청 기록 저장
+     * @param user
+     * @param cookie
+     */
+    private void saveRecentCookiesToDB(User user, Cookie cookie) {
+        String key = Define.REDIS_RECENT_COOKIE_PREFIX + user.getId();
+
+        redisTemplate.opsForList().remove(key, 0, cookie.getId());
+        redisTemplate.opsForList().leftPush(key, cookie.getId());
+        redisTemplate.opsForList().trim(key, 0, 9);
+
+        Optional<UserRecentCookie> urc = userRecentCookieRepository.findByCookieId(
+            cookie.getId());
+
+        if(urc.isPresent()) {
+            UserRecentCookie userRecentCookie = urc.get();
+            userRecentCookie.updateViewAt();
+        } else  {
+            userRecentCookieRepository.save(new UserRecentCookie(user, cookie));
+        }
+
     }
 
     public Response.Page<CookieResponse.List> getCookieListByUserId(AuthUser auth, Long userId, int page, int size) {
@@ -113,7 +157,8 @@ public class CookieService {
      * @param size
      * @return
      */
-    public Response.Page<List> searchKeyword(int page, int size,
+    @Transactional(readOnly = true)
+    public Response.Page<CookieResponse.List> searchKeyword(int page, int size,
         CookieSearch search) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return cookieRepository.searchCookieListByKeyword(pageable, search);
@@ -123,7 +168,17 @@ public class CookieService {
      * 무한 스크롤 방식
      * @return
      */
-    public Response.Slice<List> getCookieListByCategory(int size, LocalDateTime startDateTime, CookieSearch search) {
+    @Transactional(readOnly = true)
+    public Response.Slice<CookieResponse.List> getCookieListByCategory(int size, LocalDateTime startDateTime, CookieSearch search) {
         return cookieRepository.getSliceByCategoryId(size, startDateTime, search);
+    }
+
+    public List<CookieResponse.RecentList> getRecentCookies(long userId) {
+        String key = Define.REDIS_RECENT_COOKIE_PREFIX + userId;
+        List<Long> values = redisTemplate.opsForList().range(key, 0, -1).stream()
+            .map(x-> Long.valueOf(String.valueOf(x)))  // Object를 String으로 변환 후 Long으로 변환
+            .collect(Collectors.toList());
+
+        return cookieRepository.getRecentCookies(values);
     }
 }

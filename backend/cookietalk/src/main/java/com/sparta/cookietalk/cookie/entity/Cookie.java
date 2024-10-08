@@ -26,6 +26,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -71,6 +72,10 @@ public class Cookie extends Timestamped {
 
     @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @BatchSize(size = 10)
+    private List<UserRecentCookie> recentCookies = new ArrayList<>();
 
     /**
      * 비디오 등록

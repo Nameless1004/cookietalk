@@ -34,12 +34,9 @@ public class ChannelController {
     @PatchMapping("/api/v1/channels")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> updateChannel(
         @RequestPart("profile") MultipartFile profile,
-        @RequestPart("description") String description,
-        @RequestPart("businessEmail") String businessEmail,
-        @RequestPart("blogUrl") String blogUrl,
-        @RequestPart("githubUrl") String githubUrl,
+        @RequestPart("update") Update update,
         @AuthenticationPrincipal AuthUser authUser) {
 
-        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(profile, new Update(description, businessEmail, blogUrl, githubUrl), authUser));
+        return ResponseDto.toEntity(HttpStatus.OK, channelService.updateProfile(profile, update, authUser));
     }
 }

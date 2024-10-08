@@ -14,13 +14,15 @@ public sealed interface AuthRequest permits Signup, Signin, CheckNickname, Check
     CheckUsername {
     record Signin (
         @NotBlank String username,
-        @NotBlank String password) implements AuthRequest {}
+        @NotBlank String password,
+        String adminToken) implements AuthRequest {}
 
     record Signup (
         @NotBlank String username,
         @NotBlank String password,
         @Email String email,
         @NotBlank String nickname,
+        String adminToken,
         @NotNull UserRole userRole
         ) implements AuthRequest {
     }
