@@ -68,7 +68,7 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
   return editMode ? (
     <form
       onSubmit={handleProfileSubmit}
-      className='grid grid-cols-[1fr_4fr] gap-10 items-center w-full h-[250px] -bg--light-gray-1 p-10'
+      className='grid grid-cols-[1fr_4fr] gap-10 items-center w-full h-[300px] -bg--light-gray-1 p-10'
     >
       <ImageInput
         value={profileInput.profileImg}
