@@ -4,6 +4,8 @@ import com.sparta.cookietalk.category.entity.Category;
 import com.sparta.cookietalk.category.entity.CookieCategory;
 import com.sparta.cookietalk.category.repository.CategoryRepository;
 import com.sparta.cookietalk.category.repository.CookieCategoryRepository;
+import com.sparta.cookietalk.channel.entity.Channel;
+import com.sparta.cookietalk.channel.repository.ChannelRepository;
 import com.sparta.cookietalk.common.dto.Response.Page;
 import com.sparta.cookietalk.common.dto.Response.Slice;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
@@ -15,6 +17,10 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
+import com.sparta.cookietalk.series.entity.Series;
+import com.sparta.cookietalk.series.entity.SeriesCookie;
+import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
+import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
 import com.sparta.cookietalk.user.entity.User;
@@ -45,6 +51,13 @@ public class CookieSearchTest {
 
     @Autowired
     private PasswordEncoder encoder;
+    @Autowired
+    private ChannelRepository channelRepository;
+    @Autowired
+    private SeriesRepository seriesRepository;
+    @Autowired
+    private SeriesCookieRepository seriesCookieRepository;
+
     @Test
     @Transactional
     @Rollback(false)
@@ -73,6 +86,25 @@ public class CookieSearchTest {
             }
             cookieCategoryRepository.saveAndFlush(cc);
         }
+    }
+
+    @Test
+    @Rollback(false)
+    public void zz() throws Exception {
+        // given
+//        Channel channel = channelRepository.findById(1L).get();
+//        Cookie cookie = cookieRepository.findById(10L).get();
+//        Series s = new Series(channel, "테스트 시리즈");
+//        s = seriesRepository.saveAndFlush(s);
+//
+//        SeriesCookie sc = new SeriesCookie(s, cookie);
+//        seriesCookieRepository.saveAndFlush(sc);
+
+        Detail cookieDetails = cookieRepository.getCookieDetails(50L);
+        System.out.println("cookieDetails.toString() = " + cookieDetails.toString());
+        // when
+
+        // then
     }
 
     @Test
