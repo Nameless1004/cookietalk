@@ -34,7 +34,7 @@ public class ChannelController {
     @PatchMapping("/api/v1/users/{userId}/channels/profile")
     public ResponseEntity<ResponseDto<ChannelResponse.Profile>> updateChannel(
         @PathVariable("userId") long userId,
-        @RequestPart("profile") MultipartFile profile,
+        @RequestPart(required = false, name = "profile") MultipartFile profile,
         @RequestPart("update") Update update,
         @AuthenticationPrincipal AuthUser authUser) {
 

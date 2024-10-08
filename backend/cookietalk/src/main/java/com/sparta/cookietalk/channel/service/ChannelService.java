@@ -56,20 +56,22 @@ public class ChannelService {
             throw new AuthException("수정 권한이 없습니다.");
         }
 
-        String prefixKey = UploadType.IMAGE.getKey() + "/" + "user_" + authUser.getUserId() + "profile";
-        if(channel.getProfileImage() == null){
-            S3UploadResponseDto response = s3Uploader.uploadMultipartFileToS3(prefixKey, profile)
-                .orElseThrow(S3UploadFailedException::new);
+        if(profile != null){
+            String prefixKey = UploadType.IMAGE.getKey() + "/" + "user_" + authUser.getUserId() + "profile";
+            if(channel.getProfileImage() == null){
+                S3UploadResponseDto response = s3Uploader.uploadMultipartFileToS3(prefixKey, profile)
+                    .orElseThrow(S3UploadFailedException::new);
 
-            UploadFile uploadFile = new UploadFile(UploadType.IMAGE, UploadStatus.COMPLETED, response.getS3Key(), response.getS3Url());
-            uploadFile = uploadFileRepository.save(uploadFile);
-            channel.registProfileImage(uploadFile);
-        } else {
-            s3Uploader.deleteFile(UploadType.IMAGE, channel.getProfileImage().getS3Key());
-            S3UploadResponseDto response = s3Uploader.uploadMultipartFileToS3(prefixKey, profile)
-                .orElseThrow(S3UploadFailedException::new);
+                UploadFile uploadFile = new UploadFile(UploadType.IMAGE, UploadStatus.COMPLETED, response.getS3Key(), response.getS3Url());
+                uploadFile = uploadFileRepository.save(uploadFile);
+                channel.registProfileImage(uploadFile);
+            } else {
+                s3Uploader.deleteFile(UploadType.IMAGE, channel.getProfileImage().getS3Key());
+                S3UploadResponseDto response = s3Uploader.uploadMultipartFileToS3(prefixKey, profile)
+                    .orElseThrow(S3UploadFailedException::new);
 
-            channel.getProfileImage().updateS3(response);
+                channel.getProfileImage().updateS3(response);
+            }
         }
 
         channel.updateProfile(request);
