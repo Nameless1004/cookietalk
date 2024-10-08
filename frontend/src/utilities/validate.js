@@ -102,13 +102,6 @@ export const authValidate = ({ input, mode }) => {
 };
 
 export const channelProfileValidate = (input) => {
-  if (onlyBlankRegex.test(input.nickname)) {
-    return {
-      isValid: false,
-      message: '닉네임을 입력해주세요.',
-    };
-  }
-
   if (onlyBlankRegex.test(input.blogUrl)) {
     return {
       isValid: false,

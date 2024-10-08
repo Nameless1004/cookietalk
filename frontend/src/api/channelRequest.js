@@ -16,7 +16,6 @@ export const patchChannelProfile = async (updatedProfile) => {
 
   const formData = new FormData();
 
-  formData.append('nickname', updatedProfile.nickname ?? '');
   formData.append('description', updatedProfile.description ?? '');
   formData.append('githubUrl', updatedProfile.githubUrl ?? '');
   formData.append('blogUrl', updatedProfile.blogUrl ?? '');
