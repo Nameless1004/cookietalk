@@ -14,6 +14,8 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.QCookie;
 import com.sparta.cookietalk.cookie.entity.QUserRecentCookie;
+import com.sparta.cookietalk.series.entity.QSeries;
+import com.sparta.cookietalk.series.entity.QSeriesCookie;
 import com.sparta.cookietalk.upload.QUploadFile;
 import com.sparta.cookietalk.user.entity.QUser;
 import java.time.LocalDateTime;
@@ -89,6 +91,37 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .leftJoin(cookie.thumbnailFile, thumbnail)
             .where(cookie.id.in(list))
             .orderBy(userRecentCookie.viewAt.desc())
+            .fetch();
+    }
+
+    @Override
+    public List<CookieResponse.SeriesList> getCookiesInSeries(long seriesId) {
+        QUser user = QUser.user;
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+
+        QSeries s = QSeries.series;
+        QSeriesCookie sc = QSeriesCookie.seriesCookie;
+
+        return queryFactory.
+            select(Projections.constructor(CookieResponse.SeriesList.class,
+                user.id,
+                user.nickname,
+                cookie.id,
+                cookie.title,
+                thumbnail.s3Url,
+                cookie.proccessStatus,
+                s.createdAt))
+            .distinct()
+            .from(sc)
+            .join(sc.cookie, cookie)
+            .join(sc.series, s)
+            .join(cookie.channel, channel)
+            .join(channel.user, user)
+            .join(cookie.thumbnailFile, thumbnail)
+            .where(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(s.id.eq(seriesId)))
+            .orderBy(sc.createdAt.desc())
             .fetch();
     }
 

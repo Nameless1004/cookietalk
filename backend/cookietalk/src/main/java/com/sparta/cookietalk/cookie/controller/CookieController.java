@@ -7,6 +7,7 @@ import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.cookie.dto.CookieRequest;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
+import jakarta.annotation.security.PermitAll;
 import java.util.List;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.service.CookieService;
@@ -88,6 +89,13 @@ public class CookieController {
     {
         Response.Page<CookieResponse.List> pageResult = cookieService.getCookieListByUserId(authUser, userId, page, size);
         return ResponseDto.toEntity(HttpStatus.OK, pageResult);
+    }
+
+    @GetMapping("/api/v1/users/{userId}/channel/series/{seriesId}/cookies")
+    public ResponseEntity<ResponseDto<List<CookieResponse.SeriesList>>> getCookiesInSeries(
+        @PathVariable("userId") long userId,
+        @PathVariable("seriesId") long seriesId) {
+        return ResponseDto.toEntity(HttpStatus.OK, cookieService.getCookieListInSeries(userId, seriesId));
     }
 
     @GetMapping("/api/v1/users/{userId}/recent-cookies")

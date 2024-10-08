@@ -16,4 +16,6 @@ public interface CookieCustomRepository {
     Response.Slice<CookieResponse.List> getSliceByCategoryId(int size, LocalDateTime cursor, CookieSearch search);
 
     List<CookieResponse.RecentList> getRecentCookies(List<Long> longList);
+
+    List<CookieResponse.SeriesList> getCookiesInSeries(long seriesId);
 }
