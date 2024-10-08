@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class Series extends Timestamped {
     private Channel channel;
 
     @OneToMany(mappedBy = "series", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<SeriesCookie> seriesCookies;
+    private List<SeriesCookie> seriesCookies = new ArrayList<>();
 
     public Series(Channel channel, String title){
         this.title = title;

@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.cookietalk.category.entity.QCategory;
 import com.sparta.cookietalk.category.entity.QCookieCategory;
@@ -39,8 +40,8 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
         QUploadFile video = new QUploadFile("videoFile");
         QUploadFile thumbnail = new QUploadFile("thumbnailFile");
         QUploadFile attachment = new QUploadFile("attachmentFile");
-        QCategory category = QCategory.category;
-        QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
+        QSeriesCookie seriesCookie = QSeriesCookie.seriesCookie;
+        QSeries series = QSeries.series;
 
         CookieResponse.Detail c = queryFactory
             .select(Projections.constructor(CookieResponse.Detail.class,
@@ -54,10 +55,13 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 video.id,
                 thumbnail.id,
                 attachment.id,
+                series.id,
                 cookie.createdAt
                 ))
             .distinct()
             .from(cookie)
+            .leftJoin(cookie.seriesCookies, seriesCookie)
+            .leftJoin(seriesCookie.series, series)
             .innerJoin(cookie.channel, channel)
             .innerJoin(channel.user, user)
             .innerJoin(cookie.videoFile, video)

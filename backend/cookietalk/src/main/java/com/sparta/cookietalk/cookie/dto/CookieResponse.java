@@ -24,6 +24,7 @@ public sealed interface CookieResponse permits Create, Detail, List, RecentList,
         Long uploadFileId,
         Long thumbnailFileId,
         Long attachmentFileId,
+        Long seriesId,
         LocalDateTime createdAt) implements CookieResponse {}
 
     record List(
