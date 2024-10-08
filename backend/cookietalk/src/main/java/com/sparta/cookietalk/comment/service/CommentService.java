@@ -18,9 +18,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -60,6 +62,7 @@ public class CommentService {
      * @param cookieId 조회할 쿠키 아이디
      * @return
      */
+    @Transactional(readOnly = true)
     public Response.Page<CommentResponse.List> getCommentList(int page, int size, Long cookieId) {
         Cookie cookie = cookieRepository.findById(cookieId)
             .orElseThrow(() -> new InvalidRequestException("존재하지 않는 쿠키입니다."));

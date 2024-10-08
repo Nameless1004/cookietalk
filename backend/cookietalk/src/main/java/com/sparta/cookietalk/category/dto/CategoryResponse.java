@@ -1,13 +1,13 @@
 package com.sparta.cookietalk.category.dto;
 
-import com.querydsl.core.annotations.QueryProjection;
-import com.sparta.cookietalk.category.dto.CategoryResponse.All;
-import com.sparta.cookietalk.category.dto.CategoryResponse.Detail;
-import java.util.List;
+import com.sparta.cookietalk.category.dto.CategoryResponse.Create;
+import com.sparta.cookietalk.category.dto.CategoryResponse.List;
+import com.sparta.cookietalk.category.dto.CategoryResponse.Update;
 
-public sealed interface CategoryResponse permits Detail, All {
-    record Detail(Long id, String name) implements CategoryResponse {
-    }
+public sealed interface CategoryResponse permits List, Create, Update {
+    record List(Long id, String name) implements CategoryResponse {}
 
-    record All(List<Detail> list) implements CategoryResponse {}
+    record Create(Long id, String name) implements CategoryResponse {}
+
+    record Update(Long id, String name) implements CategoryResponse {}
 }

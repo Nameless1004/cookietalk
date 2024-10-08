@@ -7,6 +7,7 @@ import com.sparta.cookietalk.common.defines.Define;
 import com.sparta.cookietalk.common.dto.ResponseDto;
 import com.sparta.cookietalk.common.enums.TokenType;
 import com.sparta.cookietalk.common.enums.UserRole;
+import com.sparta.cookietalk.common.exceptions.AuthException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.security.AuthUser;
 import com.sparta.cookietalk.security.JwtUtil;
@@ -17,11 +18,13 @@ import io.jsonwebtoken.ExpiredJwtException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @Transactional
@@ -32,12 +35,22 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @Value("${admin.token}")
+    private String adminToken;
+
     /**
      * 회원가입
      * @param request
      * @return
      */
     public ResponseDto<AuthResponse.Signup> signup(AuthRequest.Signup request) {
+        if(request.userRole() == UserRole.ROLE_ADMIN) {
+            if(!request.adminToken().equals(adminToken)) {
+                throw new AuthException("관리자 권한이 없습니다.");
+            }
+        }
+
         String username = request.username();
         String password = passwordEncoder.encode(request.password());
 
@@ -49,14 +62,14 @@ public class AuthService {
 
         // email 중복확인
         String email = request.email();
-        Optional<User> checkEmail = userRepository.findByEmail(email);
+        Optional<User> checkEmail = userRepository.findWithChannelByEmail(email);
         if (checkEmail.isPresent()) {
             throw new InvalidRequestException("중복된 Email 입니다.");
         }
 
         // nickname 중복확인
         String nickname = request.nickname();
-        Optional<User> checkNickname = userRepository.findByNickname(nickname);
+        Optional<User> checkNickname = userRepository.findWithChannelByNickname(nickname);
         if (checkNickname.isPresent()) {
             throw new InvalidRequestException("중복된 닉네임 입니다.");
         }
@@ -74,10 +87,20 @@ public class AuthService {
      * @return
      */
     public ResponseDto<AuthResponse.Signin> signin(AuthRequest.Signin request) {
-        User user = userRepository.findByUsername(request.username()).orElseThrow(()-> new InvalidRequestException("아이디 또는 비밀번호가 잘못되었습니다."));
+        User user = userRepository.findWithChannelByUsername(request.username()).orElseThrow(()-> new InvalidRequestException("아이디 또는 비밀번호가 잘못되었습니다."));
 
         if(!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new InvalidRequestException("아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+
+        if(user.getRole() == UserRole.ROLE_ADMIN) {
+            if(!StringUtils.hasText(request.adminToken())){
+                throw new AuthException("관리자 권한이 없습니다.");
+            }
+
+            if(!request.adminToken().equals(adminToken)) {
+                throw new AuthException("관리자 권한이 없습니다.");
+            }
         }
 
         String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getRole());

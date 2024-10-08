@@ -9,15 +9,20 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    @Query("SELECT u FROM User u JOIN FETCH u.channel WHERE u.id = :id")
+    Optional<User> findWithChannelById(@Param("id") Long id);
+
     @Query("SELECT u FROM User u JOIN FETCH u.channel WHERE u.username = :username")
-    Optional<User> findUserWithChannelByUsername(@Param("username")String username);
+    Optional<User> findWithChannelByUsername(@Param("username")String username);
 
-    Optional<User> findByEmail(String email);
+    @Query("SELECT u FROM User u JOIN FETCH u.channel WHERE u.email = :email")
+    Optional<User> findWithChannelByEmail(@Param("email") String email);
 
-    Optional<User> findByNickname(String nickname);
+    @Query("SELECT u FROM User u JOIN FETCH u.channel WHERE u.nickname = :nickname")
+    Optional<User> findWithChannelByNickname(@Param("nickname") String nickname);
 
     default User findByIdOrElseThrow(Long userId){
-        return findById(userId).orElseThrow(() -> new InvalidRequestException("존재하지 않는 사용자입니다."));
+        return findWithChannelById(userId).orElseThrow(() -> new InvalidRequestException("존재하지 않는 사용자입니다."));
     }
 
     Optional<User> findByUsername(String username);

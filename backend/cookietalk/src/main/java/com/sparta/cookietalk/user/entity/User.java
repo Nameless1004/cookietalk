@@ -3,7 +3,9 @@ package com.sparta.cookietalk.user.entity;
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.comment.entity.Comment;
 import com.sparta.cookietalk.common.enums.UserRole;
+import com.sparta.cookietalk.cookie.entity.UserRecentCookie;
 import com.sparta.cookietalk.user.UserEventListener;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -21,6 +23,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Entity
@@ -53,6 +56,10 @@ public class User {
     @OneToMany(mappedBy = "authUser")
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @BatchSize(size = 10)
+    private List<UserRecentCookie> recentCookies = new ArrayList<>();
+
     public User(String username, String password, String email,String nickname,
         UserRole role) {
         this.username = username;
@@ -80,13 +87,5 @@ public class User {
 
     public void registChannel(Channel channel) {
         this.channel = channel;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true; // 메모리 주소가 같으면 true
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o; // 객체 캐스팅
-        return id != null && id.equals(user.id);
     }
 }
