@@ -1,4 +1,4 @@
-import { Coffee, Github, Mail, UserCog } from 'lucide-react';
+import { Coffee, Github, Mail, UserCog, BookMarked } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ImageInput from '../inputs/ImageInput.jsx';
 import FormInput from '../inputs/FormInput.jsx';
@@ -166,6 +166,14 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
             }}
           >
             <Mail strokeWidth='1.5px' />
+          </button>
+          <button
+            aria-label='Copy User Blog'
+            onClick={() => {
+              handleCopyClipboard(profile.blogUrl, '블로그 주소가 클립보드에 복사됐습니다.');
+            }}
+          >
+            <BookMarked strokeWidth='1.5px' />
           </button>
           <button
             aria-label='Support U
