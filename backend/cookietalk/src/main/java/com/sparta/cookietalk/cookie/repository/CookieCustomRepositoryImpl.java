@@ -87,7 +87,6 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .innerJoin(cookie.channel, channel)
             .innerJoin(channel.user, user)
             .leftJoin(cookie.thumbnailFile, thumbnail)
-            // 서브쿼리에서 cookie_id를 명확히 지정
             .where(cookie.id.in(list))
             .orderBy(userRecentCookie.viewAt.desc())
             .fetch();
