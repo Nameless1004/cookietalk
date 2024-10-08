@@ -1,5 +1,6 @@
 package com.sparta.cookietalk.series.entity;
 
+import com.sparta.cookietalk.common.entity.Timestamped;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SeriesCookie {
+public class SeriesCookie extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

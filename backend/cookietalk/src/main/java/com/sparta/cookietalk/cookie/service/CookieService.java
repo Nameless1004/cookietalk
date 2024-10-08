@@ -18,6 +18,9 @@ import com.sparta.cookietalk.cookie.entity.UserRecentCookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.cookie.repository.UserRecentCookieRepository;
 import com.sparta.cookietalk.security.AuthUser;
+import com.sparta.cookietalk.series.entity.Series;
+import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
+import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
 import com.sparta.cookietalk.upload.UploadFileRepository;
 import com.sparta.cookietalk.user.entity.User;
@@ -51,6 +54,8 @@ public class CookieService {
     private final UserRepository userRepository;
     private final AmazonS3Uploader amazonS3Uploader;
     private final UploadFileRepository uploadFileRepository;
+    private final SeriesCookieRepository seriesCookieRepository;
+    private final SeriesRepository seriesRepository;
 
     /**
      * 쿠키 생성
@@ -224,5 +229,25 @@ public class CookieService {
         }
 
         cookieRepository.delete(cookie);
+    }
+
+    /**
+     * 해당 유저의 시리즈 쿠키 목록 조회
+     * @param userId
+     * @param seriesId
+     * @return
+     */
+    public List<CookieResponse.SeriesList> getCookieListInSeries(long userId, long seriesId) {
+        User user = userRepository.findWithChannelById(userId)
+            .orElseThrow(()-> new InvalidRequestException("존재하지 않는 사용자입니다."));
+
+        Series series = seriesRepository.findWithChannelById(seriesId)
+            .orElseThrow(()-> new InvalidRequestException("존재하지 않는 시리즈입니다."));
+
+        if(user.getChannel().getId() != series.getChannel().getId()) {
+            throw new InvalidRequestException("해당 유저의 시리즈가 아닙니다.");
+        }
+
+        return cookieRepository.getCookiesInSeries(seriesId);
     }
 }
