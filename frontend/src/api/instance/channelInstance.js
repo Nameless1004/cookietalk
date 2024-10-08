@@ -1,15 +1,11 @@
 import axios from 'axios';
 import getAccessToken from '../../utilities/getAccessToken.js';
 
-export const cookieInstance = axios.create({
-  baseURL: 'http://localhost:8080/api/cookies',
+export const authenticatedChannelInstance = axios.create({
+  baseURL: 'http://localhost:8080/api/v1/channels',
 });
 
-export const authCookieInstance = axios.create({
-  baseURL: 'http://localhost:8080/api/cookies',
-});
-
-authCookieInstance.interceptors.request.use(
+authenticatedChannelInstance.interceptors.request.use(
   (config) => {
     const accessToken = getAccessToken();
     if (accessToken) {
