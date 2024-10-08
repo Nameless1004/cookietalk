@@ -5,6 +5,7 @@ import TemporalError from '../components/TemporalError.jsx';
 import { useEffect, useState } from 'react';
 import ChannelCookieRegion from '../components/channel/ChannelCookieRegion.jsx';
 import ChannelProfile from '../components/channel/ChannelProfile.jsx';
+import UserSeries from '../components/channel/UserSeries.jsx';
 
 const Channel = () => {
   const location = useLocation();
@@ -12,7 +13,7 @@ const Channel = () => {
   const { id } = useUserStore((state) => state.user);
   const [isMyChannel, setIsMyChannel] = useState(false);
 
-  const { data, isPending, isError, error, isSuccess } = useGetChannelProfile(id);
+  const { data, isPending: isProfilePending, isError, error, isSuccess } = useGetChannelProfile(id);
 
   useEffect(() => {
     if (isSuccess) {
@@ -42,26 +43,14 @@ const Channel = () => {
       <ChannelProfile
         isMyChannel={isMyChannel}
         profile={data}
-        isPending={isPending}
+        isPending={isProfilePending}
       />
       <div className='flex flex-col gap-5 mt-5'>
-        <ChannelCookieRegion
-          userId={data?.userId}
-          title='토커의 시리즈'
-          mode='series'
-        />
-        <ChannelCookieRegion
-          userId={data?.userId}
-          title='토커의 쿠키'
-          mode='cookies'
-        />
-        {isMyChannel ? (
-          <ChannelCookieRegion
-            userId={data?.userId}
-            title='최근 본 쿠키'
-            mode='recent'
-          />
-        ) : null}
+        <ChannelCookieRegion title='토커의 시리즈'>
+          <UserSeries userId={id} />
+        </ChannelCookieRegion>
+        <ChannelCookieRegion title='토커의 쿠키'></ChannelCookieRegion>
+        {isMyChannel ? <ChannelCookieRegion title='최근 본 쿠키'></ChannelCookieRegion> : null}
       </div>
     </div>
   );

@@ -10,9 +10,6 @@ import { handleClipboard } from '../../utilities/clipboard.js';
 const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
   const [editMode, setEditMode] = useState(false);
   const [profileInput, setProfileInput] = useState({
-    channelId: null,
-    userId: null,
-    nickname: null,
     description: null,
     githubUrl: null,
     blogUrl: null,
@@ -77,14 +74,6 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
         buttonLabel='이미지 선택'
       />
       <div className='flex flex-col gap-3 h-full'>
-        <FormInput
-          type='text'
-          name='nickname'
-          formValue={profileInput}
-          setFormValue={setProfileInput}
-          label='닉네임 *'
-          placeholder='닉네임을 입력해주세요'
-        />
         <FormInput
           name='blogUrl'
           formValue={profileInput}
