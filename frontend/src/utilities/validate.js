@@ -100,3 +100,45 @@ export const authValidate = ({ input, mode }) => {
     message: null,
   };
 };
+
+export const channelProfileValidate = (input) => {
+  if (onlyBlankRegex.test(input.nickname)) {
+    return {
+      isValid: false,
+      message: '닉네임을 입력해주세요.',
+    };
+  }
+
+  if (onlyBlankRegex.test(input.blogUrl)) {
+    return {
+      isValid: false,
+      message: '블로그 주소를 입력해주세요.',
+    };
+  }
+
+  if (onlyBlankRegex.test(input.businessEmail)) {
+    return {
+      isValid: false,
+      message: '이메일 주소를 입력해주세요.',
+    };
+  }
+
+  if (onlyBlankRegex.test(input.githubUrl)) {
+    return {
+      isValid: false,
+      message: '깃허브 주소를 입력해주세요.',
+    };
+  }
+
+  if (onlyBlankRegex.test(input.description)) {
+    return {
+      isValid: false,
+      message: '채널 소개를 입력해주세요.',
+    };
+  }
+
+  return {
+    isValid: true,
+    message: null,
+  };
+};

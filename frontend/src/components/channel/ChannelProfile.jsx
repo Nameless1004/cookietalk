@@ -4,6 +4,7 @@ import ImageInput from '../inputs/ImageInput.jsx';
 import FormInput from '../inputs/FormInput.jsx';
 import Button from '../inputs/Button.jsx';
 import { usePatchChannelProfile } from '../../query/channelQuery.js';
+import { channelProfileValidate } from '../../utilities/validate.js';
 
 const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
   const [editMode, setEditMode] = useState(false);
@@ -50,6 +51,12 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
 
   const handleProfileSubmit = (e) => {
     e.preventDefault();
+
+    const { isValid, message } = channelProfileValidate(profileInput);
+    if (!isValid) {
+      alert(message);
+      return;
+    }
 
     mutateProfile(profileInput);
     setEditMode(false);
@@ -103,13 +110,24 @@ const ChannelProfile = ({ isMyChannel, profile, isPending }) => {
           label='채널 소개 *'
           placeholder='채널 소개를 작성해주세요'
         />
-        <Button
-          type='submit'
-          styleType='primary'
-          sizeType='full'
-        >
-          수정하기
-        </Button>
+        <div className='flex'>
+          <Button
+            type='submit'
+            styleType='primary'
+            sizeType='full'
+          >
+            수정하기
+          </Button>
+          <Button
+            type='button'
+            styleType='sub'
+            className='bg-white'
+            sizeType='full'
+            onClick={handleToggleEditMode}
+          >
+            닫기
+          </Button>
+        </div>
       </div>
     </form>
   ) : (
