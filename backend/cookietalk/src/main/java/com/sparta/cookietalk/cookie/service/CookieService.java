@@ -1,31 +1,34 @@
 package com.sparta.cookietalk.cookie.service;
 
+import com.sparta.cookietalk.amazon.AmazonS3Uploader;
 import com.sparta.cookietalk.channel.entity.Channel;
 import com.sparta.cookietalk.channel.repository.ChannelRepository;
 import com.sparta.cookietalk.common.defines.Define;
 import com.sparta.cookietalk.common.dto.Response;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.common.enums.UploadStatus;
+import com.sparta.cookietalk.common.enums.UploadType;
+import com.sparta.cookietalk.common.exceptions.AuthException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.entity.UserRecentCookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
 import com.sparta.cookietalk.cookie.repository.UserRecentCookieRepository;
 import com.sparta.cookietalk.security.AuthUser;
+import com.sparta.cookietalk.series.entity.Series;
+import com.sparta.cookietalk.series.repository.SeriesCookieRepository;
+import com.sparta.cookietalk.series.repository.SeriesRepository;
 import com.sparta.cookietalk.upload.UploadFile;
+import com.sparta.cookietalk.upload.UploadFileRepository;
 import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +37,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -48,6 +52,10 @@ public class CookieService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserRecentCookieRepository userRecentCookieRepository;
     private final UserRepository userRepository;
+    private final AmazonS3Uploader amazonS3Uploader;
+    private final UploadFileRepository uploadFileRepository;
+    private final SeriesCookieRepository seriesCookieRepository;
+    private final SeriesRepository seriesRepository;
 
     /**
      * 쿠키 생성
@@ -181,5 +189,65 @@ public class CookieService {
             .collect(Collectors.toList());
 
         return cookieRepository.getRecentCookies(values);
+    }
+
+    /**
+     * 쿠키 삭제
+     * @param authUser
+     * @param cookieId
+     */
+    public void deleteCookie(AuthUser authUser, long cookieId) {
+        Cookie cookie = cookieRepository.findWithChannelAndUserAllUploadFileById(cookieId)
+            .orElseThrow(() -> new InvalidRequestException("존재하지 않는 쿠키입니다."));
+
+        if(cookie.getChannel().getUser().getId() != authUser.getUserId()) {
+            throw new AuthException("삭제 권한이 없습니다.");
+        }
+
+        UploadFile videoFile = cookie.getVideoFile();
+        UploadFile thumbnailFile = cookie.getThumbnailFile();
+        UploadFile attachmentFile = cookie.getAttachmentFile();
+
+        List<UploadFile> uf = new ArrayList<>();
+        if(videoFile != null && StringUtils.hasText(videoFile.getS3Url())) {
+            amazonS3Uploader.deleteFile(UploadType.VIDEO, videoFile.getS3Key());
+            uf.add(videoFile);
+        }
+
+        if(thumbnailFile != null && StringUtils.hasText(thumbnailFile.getS3Url())) {
+            amazonS3Uploader.deleteFile(UploadType.IMAGE, thumbnailFile.getS3Key());
+            uf.add(thumbnailFile);
+        }
+
+        if(attachmentFile != null && StringUtils.hasText(attachmentFile.getS3Url())) {
+            amazonS3Uploader.deleteFile(UploadType.ATTACHMENT, attachmentFile.getS3Key());
+            uf.add(attachmentFile);
+        }
+
+        if(!uf.isEmpty()){
+            uploadFileRepository.deleteAll(uf);
+        }
+
+        cookieRepository.delete(cookie);
+    }
+
+    /**
+     * 해당 유저의 시리즈 쿠키 목록 조회
+     * @param userId
+     * @param seriesId
+     * @return
+     */
+    public List<CookieResponse.SeriesList> getCookieListInSeries(long userId, long seriesId) {
+        User user = userRepository.findWithChannelById(userId)
+            .orElseThrow(()-> new InvalidRequestException("존재하지 않는 사용자입니다."));
+
+        Series series = seriesRepository.findWithChannelById(seriesId)
+            .orElseThrow(()-> new InvalidRequestException("존재하지 않는 시리즈입니다."));
+
+        if(user.getChannel().getId() != series.getChannel().getId()) {
+            throw new InvalidRequestException("해당 유저의 시리즈가 아닙니다.");
+        }
+
+        return cookieRepository.getCookiesInSeries(seriesId);
     }
 }

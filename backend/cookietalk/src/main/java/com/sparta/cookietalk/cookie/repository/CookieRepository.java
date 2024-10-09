@@ -18,6 +18,6 @@ public interface CookieRepository extends JpaRepository<Cookie, Long>, CookieCus
         + "WHERE c.thumbnailFile.id = :uploadFileId OR c.videoFile.id = :uploadFileId OR c.attachmentFile.id = :uploadFileId")
     Cookie findByUploadFileId(@Param("uploadFileId")Long uploadFileId);
 
-    @Query("SELECT c FROM Cookie c JOIN FETCH c.channel JOIN FETCH c.channel.user WHERE c.id=:id")
-    Optional<Cookie> findWithUserById(@Param("id") Long id);
+    @Query("SELECT c FROM Cookie c JOIN FETCH c.channel JOIN FETCH c.channel.user LEFT JOIN FETCH c.videoFile LEFT JOIN FETCH c.thumbnailFile LEFT JOIN FETCH c.attachmentFile WHERE c.id=:id")
+    Optional<Cookie> findWithChannelAndUserAllUploadFileById(@Param("id") Long cookieId);
 }

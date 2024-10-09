@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.cookietalk.category.entity.QCategory;
 import com.sparta.cookietalk.category.entity.QCookieCategory;
@@ -14,6 +15,8 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.QCookie;
 import com.sparta.cookietalk.cookie.entity.QUserRecentCookie;
+import com.sparta.cookietalk.series.entity.QSeries;
+import com.sparta.cookietalk.series.entity.QSeriesCookie;
 import com.sparta.cookietalk.upload.QUploadFile;
 import com.sparta.cookietalk.user.entity.QUser;
 import java.time.LocalDateTime;
@@ -37,8 +40,8 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
         QUploadFile video = new QUploadFile("videoFile");
         QUploadFile thumbnail = new QUploadFile("thumbnailFile");
         QUploadFile attachment = new QUploadFile("attachmentFile");
-        QCategory category = QCategory.category;
-        QCookieCategory cookieCategory = QCookieCategory.cookieCategory;
+        QSeriesCookie seriesCookie = QSeriesCookie.seriesCookie;
+        QSeries series = QSeries.series;
 
         CookieResponse.Detail c = queryFactory
             .select(Projections.constructor(CookieResponse.Detail.class,
@@ -52,10 +55,13 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 video.id,
                 thumbnail.id,
                 attachment.id,
+                series.id,
                 cookie.createdAt
                 ))
             .distinct()
             .from(cookie)
+            .leftJoin(cookie.seriesCookies, seriesCookie)
+            .leftJoin(seriesCookie.series, series)
             .innerJoin(cookie.channel, channel)
             .innerJoin(channel.user, user)
             .innerJoin(cookie.videoFile, video)
@@ -87,9 +93,39 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .innerJoin(cookie.channel, channel)
             .innerJoin(channel.user, user)
             .leftJoin(cookie.thumbnailFile, thumbnail)
-            // 서브쿼리에서 cookie_id를 명확히 지정
             .where(cookie.id.in(list))
             .orderBy(userRecentCookie.viewAt.desc())
+            .fetch();
+    }
+
+    @Override
+    public List<CookieResponse.SeriesList> getCookiesInSeries(long seriesId) {
+        QUser user = QUser.user;
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+
+        QSeries s = QSeries.series;
+        QSeriesCookie sc = QSeriesCookie.seriesCookie;
+
+        return queryFactory.
+            select(Projections.constructor(CookieResponse.SeriesList.class,
+                user.id,
+                user.nickname,
+                cookie.id,
+                cookie.title,
+                thumbnail.s3Url,
+                cookie.proccessStatus,
+                s.createdAt))
+            .distinct()
+            .from(sc)
+            .join(sc.cookie, cookie)
+            .join(sc.series, s)
+            .join(cookie.channel, channel)
+            .join(channel.user, user)
+            .join(cookie.thumbnailFile, thumbnail)
+            .where(cookie.proccessStatus.eq(ProcessStatus.SUCCESS).and(s.id.eq(seriesId)))
+            .orderBy(sc.createdAt.desc())
             .fetch();
     }
 
