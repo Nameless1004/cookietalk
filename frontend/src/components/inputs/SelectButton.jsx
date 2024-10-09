@@ -1,7 +1,7 @@
 import CategoryIcon from '../postCookie/CategoryIcon.jsx';
 
 const SelectButton = ({ name, value, children, className, onClick, ...props }) => {
-  const isSelected = value === name;
+  const isSelected = value?.name === name;
 
   return (
     <button

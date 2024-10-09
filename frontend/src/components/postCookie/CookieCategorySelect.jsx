@@ -2,8 +2,8 @@ import SelectButton from '../inputs/SelectButton.jsx';
 import COOKIE_CATEGORIES from '../../constant/cookieCaterogies.js';
 
 const CookieCategorySelect = ({ label, formValue, setFormValue }) => {
-  const handleSelect = (e) => {
-    setFormValue({ ...formValue, category: e.target.name });
+  const handleSelect = ({ id, name }) => {
+    setFormValue({ ...formValue, category: { id, name } });
   };
 
   return (
@@ -16,7 +16,7 @@ const CookieCategorySelect = ({ label, formValue, setFormValue }) => {
               key={index}
               name={category.name}
               value={formValue.category}
-              onClick={handleSelect}
+              onClick={() => handleSelect(category)}
             >
               {category.label}
             </SelectButton>

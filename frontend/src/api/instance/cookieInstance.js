@@ -2,11 +2,11 @@ import axios from 'axios';
 import getAccessToken from '../../utilities/getAccessToken.js';
 
 export const cookieInstance = axios.create({
-  baseURL: 'http://localhost:8080/api/cookies',
+  baseURL: 'http://localhost:8080/api/v1/cookies',
 });
 
 export const authCookieInstance = axios.create({
-  baseURL: 'http://localhost:8080/api/cookies',
+  baseURL: 'http://localhost:8080/api/v1/cookies',
 });
 
 authCookieInstance.interceptors.request.use(
