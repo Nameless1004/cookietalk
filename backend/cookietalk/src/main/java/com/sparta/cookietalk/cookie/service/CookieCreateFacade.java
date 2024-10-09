@@ -56,7 +56,7 @@ public class CookieCreateFacade {
         if(createDto.seriesId() != null) {
             series = seriesRepository.findById(createDto.seriesId()).orElseThrow(()-> new InvalidRequestException("존재하지 않는 시리즈입니다."));
 
-            if(Objects.equals(series.getChannel().getId(), channel.getId())) {
+            if(series.getChannel().getId() != channel.getId()) {
                 throw new InvalidRequestException("해당 채널에 해당 시리즈가 존재하지 않습니다.");
             }
         }
