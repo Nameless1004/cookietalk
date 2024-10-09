@@ -52,6 +52,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 cookie.proccessStatus,
                 cookie.title,
                 cookie.description,
+                cookie.cookieViews,
                 video.id,
                 thumbnail.id,
                 attachment.id,
@@ -86,6 +87,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 user.nickname,
                 cookie.id,
                 cookie.title,
+                cookie.cookieViews,
                 thumbnail.s3Url,
                 userRecentCookie.viewAt))
             .from(userRecentCookie)
@@ -114,6 +116,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 user.nickname,
                 cookie.id,
                 cookie.title,
+                cookie.cookieViews,
                 thumbnail.s3Url,
                 cookie.proccessStatus,
                 s.createdAt))
@@ -149,6 +152,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 user.nickname,
                 cookie.id,
                 cookie.title,
+                cookie.cookieViews,
                 thumbnail.s3Url,
                 cookie.proccessStatus,
                 cookie.createdAt))
@@ -186,6 +190,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 user.nickname,
                 cookie.id,
                 cookie.title,
+                cookie.cookieViews,
                 thumbnail.s3Url,
                 cookie.proccessStatus,
                 cookie.createdAt))
@@ -230,6 +235,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
                 user.nickname,
                 cookie.id,
                 cookie.title,
+                cookie.cookieViews,
                 thumbnail.s3Url,
                 cookie.proccessStatus,
                 cookie.createdAt))
