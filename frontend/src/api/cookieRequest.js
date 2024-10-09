@@ -1,4 +1,5 @@
 import { authCookieInstance } from './instance/cookieInstance.js';
+import usersInstance from './instance/usersInstance.js';
 
 export const postCookie = async (input) => {
   const formData = new FormData();
@@ -32,6 +33,15 @@ export const postCookie = async (input) => {
       },
     });
 
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getUserCookies = async ({ userId, pageParam = 1 }) => {
+  try {
+    const response = await usersInstance.get(`/${userId}/channel/cookies?page=${pageParam}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
