@@ -51,7 +51,7 @@ const PostCookie = () => {
   };
 
   return (
-    <div className='relative flex justify-center w-full h-full'>
+    <div className='flex justify-center w-full h-full'>
       <form
         className='flex flex-col items-start w-[700px] gap-y-5 mt-10'
         onSubmit={handleSubmit}
@@ -141,7 +141,7 @@ const PostCookie = () => {
         <Button
           type='submit'
           styleType='primary'
-          className='absolute bottom-10 right-10 font-bold rounded px-3 py-1 w-[100px]'
+          className='absolute bottom-16 right-16 font-bold rounded px-3 py-1 w-[100px]'
           disabled={isPending || isError}
         >
           {isPending ? '처리중' : '게시하기'}
