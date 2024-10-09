@@ -60,10 +60,10 @@ public class Cookie extends Timestamped {
     @JoinColumn(name = "attachment_id", nullable = true)
     private UploadFile attachmentFile; // zip 파일
 
-    @OneToMany(mappedBy = "cookie")
+    @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<CookieCategory> cookieCategories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "cookie")
+    @OneToMany(mappedBy = "cookie", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<SeriesCookie> seriesCookies = new ArrayList<>();
 
     @Column(nullable = false)

@@ -5,9 +5,10 @@ import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Detail;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.List;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.RecentList;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.SeriesList;
 import java.time.LocalDateTime;
 
-public sealed interface CookieResponse permits Create, Detail, List, RecentList {
+public sealed interface CookieResponse permits Create, Detail, List, RecentList, SeriesList {
     record Create(
         Long cookieId
     ) implements CookieResponse {}
@@ -23,6 +24,7 @@ public sealed interface CookieResponse permits Create, Detail, List, RecentList 
         Long uploadFileId,
         Long thumbnailFileId,
         Long attachmentFileId,
+        Long seriesId,
         LocalDateTime createdAt) implements CookieResponse {}
 
     record List(
@@ -33,6 +35,16 @@ public sealed interface CookieResponse permits Create, Detail, List, RecentList 
         String thumbnailPath,
         ProcessStatus cookieStatus,
         LocalDateTime createdAt
+    ) implements CookieResponse {}
+
+    record SeriesList(
+        Long userId,
+        String userNickname,
+        Long cookieId,
+        String title,
+        String thumbnailPath,
+        ProcessStatus cookieStatus,
+        LocalDateTime addedAt
     ) implements CookieResponse {}
 
     record RecentList(

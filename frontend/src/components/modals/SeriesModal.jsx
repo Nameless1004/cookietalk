@@ -2,16 +2,36 @@ import { useEffect, useRef, useState } from 'react';
 import TextInput from '../inputs/TextInput.jsx';
 import { newSeiresValidate } from '../../utilities/validate.js';
 import Button from '../inputs/Button.jsx';
+import { useGetUserSeries, usePostSeries } from '../../query/seriesQuery.js';
+import useUserStore from '../../zustand/userStore.js';
 
 const SeriesModal = ({ setShowSeriesModal, formValue, setFormValue }) => {
-  const [seriesList, setSeriesList] = useState(['기존 시리즈', '기존 시리즈2']);
+  const [seriesList, setSeriesList] = useState([]);
   const [newSeries, setNewSeries] = useState('');
   const [selectedSeries, setSelectedSeries] = useState(null);
   const seriesListRef = useRef(null);
+  const { id } = useUserStore((state) => state.user);
+  const {
+    data,
+    isError: isGetSeriesError,
+    error: getSeriesError,
+    isSuccess: isGetSeriesSuccess,
+  } = useGetUserSeries(id);
+  const { mutate, isError: isPostSeriesError, error: postSeriesError } = usePostSeries();
+
+  useEffect(() => {
+    if (isGetSeriesSuccess) {
+      setSeriesList([...data]);
+    }
+
+    if (isGetSeriesError) {
+      alert('Get Series Error: ', getSeriesError);
+    }
+  }, [isGetSeriesSuccess, isGetSeriesError]);
 
   useEffect(() => {
     if (formValue.series) {
-      setSelectedSeries(formValue.series);
+      setSelectedSeries({ id: formValue.series.id, title: formValue.series.title });
     }
   }, []);
 
@@ -35,15 +55,19 @@ const SeriesModal = ({ setShowSeriesModal, formValue, setFormValue }) => {
       return;
     }
 
-    setSeriesList([...seriesList, newSeries]);
-    handleSelectSeries(newSeries);
+    mutate(newSeries, {
+      onSuccess: (data) => {
+        setSeriesList([...seriesList, data]);
+        handleSelectSeries(data);
+      },
+    });
   };
 
   const handleSelectSeries = (currentSeries) => {
     setSelectedSeries(null);
 
-    if (selectedSeries !== currentSeries) {
-      setSelectedSeries(currentSeries);
+    if (selectedSeries?.id !== currentSeries.id) {
+      setSelectedSeries({ ...currentSeries });
     }
   };
 
@@ -77,16 +101,16 @@ const SeriesModal = ({ setShowSeriesModal, formValue, setFormValue }) => {
           ref={seriesListRef}
           className='w-full max-h-[450px] overflow-y-auto'
         >
-          {seriesList.map((series, index) => {
+          {seriesList?.map((series, index) => {
             return (
               <li
                 key={index}
                 onClick={() => {
                   handleSelectSeries(series);
                 }}
-                className={`flex justify-start items-center px-3 border -border--light-gray-1 h-[40px] hover:cursor-pointer ${selectedSeries === series ? '-bg--secondary-orange' : 'bg-white'}`}
+                className={`flex justify-start items-center px-3 border -border--light-gray-1 h-[40px] hover:cursor-pointer ${selectedSeries?.id === series.id ? '-bg--secondary-orange' : 'bg-white'}`}
               >
-                {series}
+                {series.title}
               </li>
             );
           })}
