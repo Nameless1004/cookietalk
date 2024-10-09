@@ -1,5 +1,5 @@
 import FormInput from '../components/inputs/FormInput.jsx';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
 import CookieCategorySelect from '../components/postCookie/CookieCategorySelect.jsx';
 import SeriesModal from '../components/modals/SeriesModal.jsx';
@@ -97,7 +97,7 @@ const PostCookie = () => {
           <span className='font-bold'>시리즈</span>
           {postValues.series ? (
             <div className='flex items-center gap-3'>
-              <span>{postValues.series}</span>
+              <span>{postValues.series.title}</span>
               <X
                 onClick={() => {
                   setPostValues({ ...postValues, series: null });
@@ -148,11 +148,13 @@ const PostCookie = () => {
         </Button>
       </form>
       {showSeriesModal ? (
-        <SeriesModal
-          setShowSeriesModal={setShowSeriesModal}
-          formValue={postValues}
-          setFormValue={setPostValues}
-        />
+        <Suspense fallback={null}>
+          <SeriesModal
+            setShowSeriesModal={setShowSeriesModal}
+            formValue={postValues}
+            setFormValue={setPostValues}
+          />
+        </Suspense>
       ) : null}
     </div>
   );

@@ -9,7 +9,7 @@ export const newSeiresValidate = (input, seriesList) => {
     };
   }
 
-  if (seriesList.some((series) => series === input)) {
+  if (seriesList.some((series) => series.title === input)) {
     return {
       isValid: false,
       message: '이미 등록된 시리즈입니다.',
