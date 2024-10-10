@@ -172,4 +172,23 @@ public class AmazonS3Uploader {
             return Optional.empty();
         }
     }
+
+    public Optional<S3UploadResponseDto> uploadFileToS3(String prefixKey, File file) {
+        try{
+            String key = prefixKey + "/" + file.getName();
+            PutObjectRequest req = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+            RequestBody requestBody = RequestBody.fromFile(file);
+            s3Client.putObject(req, requestBody);
+            return Optional.of(S3UploadResponseDto.builder()
+                .s3Url(cloudFrontDomain + "/" + key)
+                .s3Key(key)
+                .build());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
 }

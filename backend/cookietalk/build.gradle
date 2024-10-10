@@ -53,6 +53,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // thumbnailator
+    implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.8'
 }
 
 tasks.named('test') {
