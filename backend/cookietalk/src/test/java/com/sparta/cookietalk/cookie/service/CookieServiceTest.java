@@ -3,6 +3,8 @@ package com.sparta.cookietalk.cookie.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 
@@ -15,6 +17,7 @@ import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
 import com.sparta.cookietalk.cookie.dto.CookieResponse.Create;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.RecentList;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.entity.UserRecentCookie;
 import com.sparta.cookietalk.cookie.repository.CookieRepository;
@@ -25,6 +28,7 @@ import com.sparta.cookietalk.upload.UploadFileRepository;
 import com.sparta.cookietalk.user.entity.User;
 import com.sparta.cookietalk.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -309,10 +313,30 @@ class CookieServiceTest {
             assertThat(uc.getViewAt().toString()).isNotEqualTo(now);
         }
 
+        @Test
+        public void 쿠키_최근_목록_조회() throws Exception {
+            // given
+            ListOperations<String, Object> a = new Default();
+            given(redisTemplate.opsForList()).willReturn(a);
+            List<Object> l = new ArrayList<>();
+            l.add(1L);
+            l.add(2L);
+            l.add(3L);
+            List<CookieResponse.RecentList> cl = new ArrayList<>();
+            cl.add(new RecentList(1L, "test", 2L, 1L, "title", "", LocalDateTime.now()));
+            given(cookieRepository.getRecentCookies(anyInt())).willReturn(cl);
+
+            // when
+            List<RecentList> recentCookies = cookieService.getRecentCookies(1);
+
+            // then
+            assertThat(recentCookies).containsExactly(cl.get(0));
+        }
+
         @Nested
         class 쿠키_유저아이디로_목록_조회 {
             
         }
-
     }
+
 }
