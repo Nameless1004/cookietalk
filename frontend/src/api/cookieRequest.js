@@ -1,13 +1,26 @@
 import { authCookieInstance } from './instance/cookieInstance.js';
+import usersInstance from './instance/usersInstance.js';
 
 export const postCookie = async (input) => {
   const formData = new FormData();
   formData.append(
     'create',
-    new Blob([JSON.stringify({ title: input.title, description: input.description, categoryId: 1, seriesId: null })], {
-      type: 'application/json',
-    }),
+    new Blob(
+      [
+        JSON.stringify({
+          title: input.title,
+          description: input.description,
+          categoryId: input.category.id,
+          seriesId: input.series?.id,
+        }),
+      ],
+      {
+        type: 'application/json',
+      },
+    ),
   );
+
+  console.log('post cookie input: ', input);
 
   formData.append('video', input.video);
   formData.append('thumbnail', input.thumbnail);
@@ -20,6 +33,15 @@ export const postCookie = async (input) => {
       },
     });
 
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getUserCookies = async ({ userId, pageParam = 1 }) => {
+  try {
+    const response = await usersInstance.get(`/${userId}/channel/cookies?page=${pageParam}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

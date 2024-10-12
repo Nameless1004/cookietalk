@@ -1,5 +1,5 @@
 import FormInput from '../components/inputs/FormInput.jsx';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import FileInput from '../components/inputs/FileInput.jsx';
 import CookieCategorySelect from '../components/postCookie/CookieCategorySelect.jsx';
 import SeriesModal from '../components/modals/SeriesModal.jsx';
@@ -51,7 +51,7 @@ const PostCookie = () => {
   };
 
   return (
-    <div className='relative flex justify-center w-full h-full'>
+    <div className='flex justify-center w-full h-full'>
       <form
         className='flex flex-col items-start w-[700px] gap-y-5 mt-10'
         onSubmit={handleSubmit}
@@ -97,7 +97,7 @@ const PostCookie = () => {
           <span className='font-bold'>시리즈</span>
           {postValues.series ? (
             <div className='flex items-center gap-3'>
-              <span>{postValues.series}</span>
+              <span>{postValues.series.title}</span>
               <X
                 onClick={() => {
                   setPostValues({ ...postValues, series: null });
@@ -141,18 +141,20 @@ const PostCookie = () => {
         <Button
           type='submit'
           styleType='primary'
-          className='absolute bottom-10 right-10 font-bold rounded px-3 py-1 w-[100px]'
+          className='absolute bottom-16 right-16 font-bold rounded px-3 py-1 w-[100px]'
           disabled={isPending || isError}
         >
           {isPending ? '처리중' : '게시하기'}
         </Button>
       </form>
       {showSeriesModal ? (
-        <SeriesModal
-          setShowSeriesModal={setShowSeriesModal}
-          formValue={postValues}
-          setFormValue={setPostValues}
-        />
+        <Suspense fallback={null}>
+          <SeriesModal
+            setShowSeriesModal={setShowSeriesModal}
+            formValue={postValues}
+            setFormValue={setPostValues}
+          />
+        </Suspense>
       ) : null}
     </div>
   );
