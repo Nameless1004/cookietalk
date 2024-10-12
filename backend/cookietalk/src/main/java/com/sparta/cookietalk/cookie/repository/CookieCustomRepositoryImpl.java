@@ -12,6 +12,7 @@ import com.sparta.cookietalk.channel.entity.QChannel;
 import com.sparta.cookietalk.common.dto.Response;
 import com.sparta.cookietalk.common.enums.ProcessStatus;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.RecentList;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.QCookie;
 import com.sparta.cookietalk.cookie.entity.QUserRecentCookie;
@@ -74,7 +75,7 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
     }
 
     @Override
-    public List<CookieResponse.RecentList> getRecentCookies(List<Long> list) {
+    public List<CookieResponse.RecentList> getRecentCookiesInCookieIds(List<Long> list) {
         QCookie cookie = QCookie.cookie;
         QChannel channel = QChannel.channel;
         QUser user = QUser.user;
@@ -97,6 +98,34 @@ public class CookieCustomRepositoryImpl implements CookieCustomRepository {
             .leftJoin(cookie.thumbnailFile, thumbnail)
             .where(cookie.id.in(list))
             .orderBy(userRecentCookie.viewAt.desc())
+            .fetch();
+    }
+
+    @Override
+    public List<RecentList> getRecentCookies(int size) {
+        QCookie cookie = QCookie.cookie;
+        QChannel channel = QChannel.channel;
+        QUser user = QUser.user;
+        QUploadFile thumbnail = new QUploadFile("thumbnailFile");
+        QUserRecentCookie userRecentCookie = QUserRecentCookie.userRecentCookie;
+        BooleanBuilder bb = new BooleanBuilder();
+
+        return queryFactory
+            .select(Projections.constructor(CookieResponse.RecentList.class,
+                user.id,
+                user.nickname,
+                cookie.id,
+                cookie.title,
+                cookie.cookieViews,
+                thumbnail.s3Url,
+                userRecentCookie.viewAt))
+            .from(userRecentCookie)
+            .innerJoin(userRecentCookie.cookie, cookie)
+            .innerJoin(cookie.channel, channel)
+            .innerJoin(channel.user, user)
+            .leftJoin(cookie.thumbnailFile, thumbnail)
+            .orderBy(userRecentCookie.viewAt.desc())
+            .limit(size)
             .fetch();
     }
 
