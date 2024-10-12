@@ -12,6 +12,7 @@ import com.sparta.cookietalk.common.exceptions.AuthException;
 import com.sparta.cookietalk.common.exceptions.InvalidRequestException;
 import com.sparta.cookietalk.cookie.dto.CookieRequest.Create;
 import com.sparta.cookietalk.cookie.dto.CookieResponse;
+import com.sparta.cookietalk.cookie.dto.CookieResponse.RecentList;
 import com.sparta.cookietalk.cookie.dto.CookieSearch;
 import com.sparta.cookietalk.cookie.entity.Cookie;
 import com.sparta.cookietalk.cookie.entity.UserRecentCookie;
@@ -185,10 +186,24 @@ public class CookieService {
     public List<CookieResponse.RecentList> getRecentCookies(long userId) {
         String key = Define.REDIS_RECENT_COOKIE_PREFIX + userId;
         List<Long> values = redisTemplate.opsForList().range(key, 0, -1).stream()
-            .map(x-> Long.valueOf(String.valueOf(x)))  // Object를 String으로 변환 후 Long으로 변환
+            .map(x-> Long.valueOf(String.valueOf(x)))
             .collect(Collectors.toList());
 
-        return cookieRepository.getRecentCookies(values);
+        if(values.isEmpty()) {
+            List<RecentList> recentCookies = cookieRepository.getRecentCookies(10);
+
+            // 레디스 최신화
+            for(RecentList r : recentCookies) {
+                redisTemplate.opsForList().remove(key, 0, r.cookieId());
+                redisTemplate.opsForList().leftPush(key, r.cookieId());
+                redisTemplate.opsForList().trim(key, 0, 9);
+            }
+
+            return recentCookies;
+        } else {
+            return cookieRepository.getRecentCookiesInCookieIds(values);
+        }
+
     }
 
     /**
